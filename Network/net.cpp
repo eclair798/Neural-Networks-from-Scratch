@@ -1,5 +1,3 @@
-//
-// Created by Yanaa on 12.01.2024.
-//
+#pragma once
 
 #include "net.h"
