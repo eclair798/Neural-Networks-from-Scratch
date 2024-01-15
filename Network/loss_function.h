@@ -8,11 +8,13 @@ namespace project {
 class DistanceFunction {
 public:
     virtual int Dist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) {
+        return 0;
     }
 
     int Dist(Eigen::MatrixXd x, Eigen::MatrixXd y);
 
     virtual Eigen::RowVectorXd DerivativeDist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) {
+        return Eigen::RowVectorXd();
     }
 
     Eigen::MatrixXd DerivativeDist(Eigen::MatrixXd x, Eigen::MatrixXd y);

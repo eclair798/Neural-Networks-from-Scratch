@@ -16,16 +16,9 @@ using ActFuncs = std::vector<std::shared_ptr<ActivationFunction>>;
 
 namespace details {
 
-std::map<FuncName, std::shared_ptr<ActivationFunction>> act_functions = {
-    {"Sigmoid", std::shared_ptr<ActivationFunction>(new act_func_options::Sigmoid())},
-    {"Tanh", std::shared_ptr<ActivationFunction>(new act_func_options::Tanh())},
-    {"ReLU", std::shared_ptr<ActivationFunction>(new act_func_options::ReLU())},
-    {"Linear", std::shared_ptr<ActivationFunction>(new act_func_options::Linear())}};
+extern std::map<FuncName, std::shared_ptr<ActivationFunction>> act_functions;
 
-std::map<FuncName, std::shared_ptr<DistanceFunction>> dist_functions = {
-    {"SquaredEuclidean",
-     std::shared_ptr<DistanceFunction>(new dist_func_options::SquaredEuclidean())},
-    {"Manhattan", std::shared_ptr<DistanceFunction>(new dist_func_options::Manhattan())}};
+extern std::map<FuncName, std::shared_ptr<DistanceFunction>> dist_functions;
 
 void SetActFuncs(FuncNames names, ActFuncs& place);
 

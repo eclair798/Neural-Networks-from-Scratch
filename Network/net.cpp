@@ -1,5 +1,3 @@
-#pragma once
-
 #include "net.h"
 
 project::Net::Net(const project::Sizes& layer_sizes, const project::FuncNames act_funcs)

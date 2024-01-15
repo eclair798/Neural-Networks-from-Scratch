@@ -8,9 +8,11 @@ namespace project {
 class ActivationFunction {
 public:
     virtual double Calc(double x) {
+        return 0.0;
     }
 
     virtual double Derivative(double x) {
+        return 0.0;
     }
 
     Eigen::VectorXd Calc(Eigen::VectorXd vector);

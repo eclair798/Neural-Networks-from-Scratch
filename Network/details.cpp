@@ -1,5 +1,18 @@
 #include "details.h"
 
+namespace project::details {
+std::map<FuncName, std::shared_ptr<ActivationFunction>> act_functions = {
+    {"Sigmoid", std::shared_ptr<ActivationFunction>(new act_func_options::Sigmoid())},
+    {"Tanh", std::shared_ptr<ActivationFunction>(new act_func_options::Tanh())},
+    {"ReLU", std::shared_ptr<ActivationFunction>(new act_func_options::ReLU())},
+    {"Linear", std::shared_ptr<ActivationFunction>(new act_func_options::Linear())}};
+
+std::map<FuncName, std::shared_ptr<DistanceFunction>> dist_functions = {
+    {"SquaredEuclidean",
+     std::shared_ptr<DistanceFunction>(new dist_func_options::SquaredEuclidean())},
+    {"Manhattan", std::shared_ptr<DistanceFunction>(new dist_func_options::Manhattan())}};
+}  // namespace project::details
+
 void project::details::CreateMatrix(const project::DataVec& data,
                                     std::shared_ptr<Eigen::MatrixXd>& place) {
     Eigen::MatrixXd::Index rows = data.size();

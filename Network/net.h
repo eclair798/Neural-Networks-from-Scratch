@@ -19,8 +19,8 @@ private:
     // TODO
 
     Sizes layer_sizes_;
-    ActFuncs act_funcs_;
-    std::shared_ptr<DistanceFunction> dist_func_;
+    ActFuncs act_funcs_ = {};
+    std::shared_ptr<DistanceFunction> dist_func_ = nullptr;
 
     double error_;
     size_t max_iter_;
