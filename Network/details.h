@@ -10,6 +10,8 @@
 
 namespace project {
 
+using DataType = double;
+
 using Sizes = std::initializer_list<size_t>;
 
 using Data = Eigen::MatrixXd;
@@ -23,7 +25,7 @@ using Vector = Eigen::VectorXd;
 using RowVector = Eigen::RowVectorXd;
 
 using FuncAct = std::function<double(double)>;
-using FuncDist = std::function<int(RowVector, RowVector)>;
+using FuncDist = std::function<double(RowVector, RowVector)>;
 using FuncDerivativeDist = std::function<RowVector(RowVector, RowVector)>;
 
 }  // namespace project

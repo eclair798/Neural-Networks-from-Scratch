@@ -11,9 +11,9 @@ public:
     ActivationFunction(FuncAct calc, FuncAct der_calc) : calc_(calc), derivative_(der_calc) {
     }
 
-    double Calc(double x);
+    DataType Calc(DataType x);
 
-    double Derivative(double x);
+    DataType Derivative(DataType x);
 
     Vector Calc(Eigen::VectorXd vector);
 
@@ -28,26 +28,26 @@ namespace act_func_options {
 
 class Sigmoid {
 public:
-    static double Calc(double x);
-    static double Derivative(double x);
+    static DataType Calc(DataType x);
+    static DataType Derivative(DataType x);
 };
 
 class Tanh {
 public:
-    static double Calc(double x);
-    static double Derivative(double x);
+    static DataType Calc(DataType x);
+    static DataType Derivative(DataType x);
 };
 
 class ReLU {
 public:
-    static double Calc(double x);
-    static double Derivative(double x);
+    static DataType Calc(DataType x);
+    static DataType Derivative(DataType x);
 };
 
 class Linear {
 public:
-    static double Calc(double x);
-    static double Derivative(double x);
+    static DataType Calc(DataType x);
+    static DataType Derivative(DataType x);
 };
 
 }  // namespace act_func_options
