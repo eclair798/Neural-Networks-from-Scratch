@@ -1,37 +1,42 @@
 #pragma one
 
-#include "../eigen/Eigen/Eigen"
-#include "../EigenRand/EigenRand/EigenRand"
+#include "details.h"
 
 namespace project {
 
 class DistanceFunction {
 public:
-    virtual int Dist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) {
-        return 0;
+    DistanceFunction() = default;
+
+    DistanceFunction(FuncDist calc, FuncDerivativeDist der_calc)
+        : dist_(calc), derivative_dist_(der_calc) {
     }
 
-    int Dist(Eigen::MatrixXd x, Eigen::MatrixXd y);
+    int Dist(RowVector x, RowVector y);
 
-    virtual Eigen::RowVectorXd DerivativeDist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) {
-        return Eigen::RowVectorXd();
-    }
+    RowVector DerivativeDist(RowVector x, RowVector y);
 
-    Eigen::MatrixXd DerivativeDist(Eigen::MatrixXd x, Eigen::MatrixXd y);
+    int Dist(Matrix x, Matrix y);
+
+    Matrix DerivativeDist(Matrix x, Matrix y);
+
+private:
+    FuncDist dist_;
+    FuncDerivativeDist derivative_dist_;
 };
 
 namespace dist_func_options {
 
-class SquaredEuclidean : public DistanceFunction {
-    int Dist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) override;
-
-    Eigen::RowVectorXd DerivativeDist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) override;
+class SquaredEuclidean {
+public:
+    static int Dist(RowVector x, RowVector y);
+    static RowVector DerivativeDist(RowVector x, RowVector y);
 };
 
-class Manhattan : public DistanceFunction {
-    int Dist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) override;
-
-    Eigen::RowVectorXd DerivativeDist(Eigen::RowVectorXd x, Eigen::RowVectorXd y) override;
+class Manhattan {
+public:
+    static int Dist(RowVector x, RowVector y);
+    static RowVector DerivativeDist(RowVector x, RowVector y);
 };
 
 }  // namespace dist_func_options

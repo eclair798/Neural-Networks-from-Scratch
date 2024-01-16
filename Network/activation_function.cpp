@@ -2,12 +2,20 @@
 
 #include "activation_function.h"
 
-Eigen::VectorXd project::ActivationFunction::Calc(Eigen::VectorXd vector) {
+double project::ActivationFunction::Calc(double x) {
+    return calc_(x);
+}
+
+double project::ActivationFunction::Derivative(double x) {
+    return derivative_(x);
+}
+
+project::Vector project::ActivationFunction::Calc(Vector vector) {
     vector = vector.unaryExpr([this](double x) { return Calc(x); });
     return vector;
 }
 
-Eigen::MatrixXd project::ActivationFunction::Derivative(Eigen::VectorXd vector) {
+project::Matrix project::ActivationFunction::Derivative(Vector vector) {
     vector = vector.unaryExpr([this](double x) { return Derivative(x); });
     return vector.asDiagonal();
 }

@@ -1,32 +1,43 @@
 #pragma once
 
-#include <initializer_list>
-#include <string>
-#include <vector>
-#include <memory>
-
-#include "details.h"
+#include "activation_function.h"
+#include "loss_function.h"
 
 namespace project {
 
+using ActFuncs = std::vector<ActivationFunction>;
+
 class Net {
 public:
-    Net(const Sizes& layer_sizes, const FuncNames act_funcs);
+    Net(const Sizes& layer_sizes, const FuncNames& act_funcs);
 
-    void Train(const Data& data, double eps, size_t max_iter, /*Alg,*/ FuncName dist_func);  // TODO
+    void Train(const DataXY& data_xy, double eps, size_t max_iter,
+               /*Alg,*/ const FuncName& dist_func);  // TODO
 
 private:
     // TODO
 
     Sizes layer_sizes_;
     ActFuncs act_funcs_ = {};
-    std::shared_ptr<DistanceFunction> dist_func_ = nullptr;
+    DistanceFunction dist_func_;
 
     double error_;
     size_t max_iter_;
 
-    std::shared_ptr<Eigen::MatrixXd> data_x_ = nullptr;
-    std::shared_ptr<Eigen::MatrixXd> data_y_ = nullptr;
+    Data data_x_;
+    Data data_y_;
 };
+
+namespace details {
+
+extern std::map<FuncName, ActivationFunction> act_functions;
+
+extern std::map<FuncName, DistanceFunction> dist_functions;
+
+void SetActFuncs(FuncNames names, ActFuncs& place);
+
+void SetDistFunc(FuncName name, DistanceFunction& place);
+
+}  // namespace details
 
 }  // namespace project

@@ -1,45 +1,53 @@
 #pragma once
 
-#include "../eigen/Eigen/Eigen"
-#include "../EigenRand/EigenRand/EigenRand"
+#include "details.h"
 
 namespace project {
 
 class ActivationFunction {
 public:
-    virtual double Calc(double x) {
-        return 0.0;
+    ActivationFunction() = default;
+
+    ActivationFunction(FuncAct calc, FuncAct der_calc) : calc_(calc), derivative_(der_calc) {
     }
 
-    virtual double Derivative(double x) {
-        return 0.0;
-    }
+    double Calc(double x);
 
-    Eigen::VectorXd Calc(Eigen::VectorXd vector);
+    double Derivative(double x);
 
-    Eigen::MatrixXd Derivative(Eigen::VectorXd vector);
+    Vector Calc(Eigen::VectorXd vector);
+
+    Matrix Derivative(Eigen::VectorXd vector);
+
+private:
+    FuncAct calc_;
+    FuncAct derivative_;
 };
 
 namespace act_func_options {
 
-class Sigmoid : public ActivationFunction {
-    double Calc(double x) override;
-    double Derivative(double x) override;
+class Sigmoid {
+public:
+    static double Calc(double x);
+    static double Derivative(double x);
 };
 
-class Tanh : public ActivationFunction {
-    double Calc(double x) override;
-    double Derivative(double x) override;
+class Tanh {
+public:
+    static double Calc(double x);
+    static double Derivative(double x);
 };
 
-class ReLU : public ActivationFunction {
-    double Calc(double x) override;
-    double Derivative(double x) override;
+class ReLU {
+public:
+    static double Calc(double x);
+    static double Derivative(double x);
 };
 
-class Linear : public ActivationFunction {
-    double Calc(double x) override;
-    double Derivative(double x) override;
+class Linear {
+public:
+    static double Calc(double x);
+    static double Derivative(double x);
 };
 
 }  // namespace act_func_options

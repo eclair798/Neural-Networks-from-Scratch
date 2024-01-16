@@ -1,31 +1,29 @@
 #pragma once
 
-#include "activation_function.h"
-#include "loss_function.h"
+#include "../eigen/Eigen/Eigen"
+#include "../EigenRand/EigenRand/EigenRand"
+
+#include <initializer_list>
+#include <string>
+#include <vector>
+#include <memory>
 
 namespace project {
 
 using Sizes = std::initializer_list<size_t>;
 
-using DataVec = std::initializer_list<std::initializer_list<double>>;
-using Data = std::pair<DataVec, DataVec>;
+using Data = Eigen::MatrixXd;
+using DataXY = std::pair<Data, Data>;
 
 using FuncName = std::string;
 using FuncNames = std::initializer_list<FuncName>;
-using ActFuncs = std::vector<std::shared_ptr<ActivationFunction>>;
 
-namespace details {
+using Matrix = Eigen::MatrixXd;
+using Vector = Eigen::VectorXd;
+using RowVector = Eigen::RowVectorXd;
 
-extern std::map<FuncName, std::shared_ptr<ActivationFunction>> act_functions;
-
-extern std::map<FuncName, std::shared_ptr<DistanceFunction>> dist_functions;
-
-void SetActFuncs(FuncNames names, ActFuncs& place);
-
-void SetDistFunc(FuncName name, std::shared_ptr<DistanceFunction>& place);
-
-void CreateMatrix(const project::DataVec& data, std::shared_ptr<Eigen::MatrixXd>& place);
-
-}  // namespace details
+using FuncAct = std::function<double(double)>;
+using FuncDist = std::function<int(RowVector, RowVector)>;
+using FuncDerivativeDist = std::function<RowVector(RowVector, RowVector)>;
 
 }  // namespace project
