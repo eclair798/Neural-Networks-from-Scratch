@@ -1,43 +1,43 @@
 #pragma once
 
-#include "activation_function.h"
 #include "loss_function.h"
+#include "layer.h"
 
 namespace project {
 
-using ActFuncs = std::vector<ActivationFunction>;
-
 class Net {
 public:
-    Net(const Sizes& layer_sizes, const FuncNames& act_funcs);
+    using ActFuncs = std::vector<ActivationFunction>;
+    using Layers = std::vector<Layer>;
 
-    void Train(const DataXY& data_xy, double eps, size_t max_iter,
+    Net(Sizes layer_sizes, FuncNames act_funcs);
+
+    void Train(const Data& data, double eps, size_t max_iter,
                /*Alg,*/ const FuncName& dist_func);  // TODO
+
+    Vector Run(const Vector x);
+
+    void Reset();
 
 private:
     // TODO
 
-    Sizes layer_sizes_;
+    Sizes layer_sizes_; // from input_size to output_size
+    Layers layers_;
+
     ActFuncs act_funcs_ = {};
     DistanceFunction dist_func_;
 
-    double error_;
+    DataType error_;
     size_t max_iter_;
 
-    Data data_x_;
-    Data data_y_;
+    Matrix data_x_;
+    Matrix data_y_;
+
+    Index input_size_;
+    Index output_size_;
 };
 
-namespace details {
-
-extern std::map<FuncName, ActivationFunction> act_functions;
-
-extern std::map<FuncName, DistanceFunction> dist_functions;
-
-void SetActFuncs(FuncNames names, ActFuncs& place);
-
-void SetDistFunc(FuncName name, DistanceFunction& place);
-
-}  // namespace details
+namespace details {}  // namespace details
 
 }  // namespace project

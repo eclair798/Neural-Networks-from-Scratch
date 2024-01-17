@@ -12,9 +12,9 @@ public:
         : dist_(calc), derivative_dist_(der_calc) {
     }
 
-    DataType Dist(RowVector x, RowVector y);
+    DataType Dist(Vector x, Vector y);
 
-    RowVector DerivativeDist(RowVector x, RowVector y);
+    Vector DerivativeDist(Vector x, Vector y);
 
     DataType Dist(Matrix x, Matrix y);
 
@@ -29,14 +29,14 @@ namespace dist_func_options {
 
 class SquaredEuclidean {
 public:
-    static DataType Dist(RowVector x, RowVector y);
-    static RowVector DerivativeDist(RowVector x, RowVector y);
+    static DataType Dist(Vector x, Vector y);
+    static Vector DerivativeDist(Vector x, Vector y);
 };
 
 class Manhattan {
 public:
-    static DataType Dist(RowVector x, RowVector y);
-    static RowVector DerivativeDist(RowVector x, RowVector y);
+    static DataType Dist(Vector x, Vector y);
+    static Vector DerivativeDist(Vector x, Vector y);
 };
 
 }  // namespace dist_func_options

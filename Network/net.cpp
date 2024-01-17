@@ -1,23 +1,8 @@
 #include "net.h"
 
-project::Net::Net(const Sizes& layer_sizes, const FuncNames& act_funcs)
-    : layer_sizes_(layer_sizes) {
-    details::SetActFuncs(act_funcs, act_funcs_);
-}
+namespace project {
 
-void project::Net::Train(const DataXY& data_xy, double eps, size_t max_iter,
-                         /*Alg,*/ const FuncName& dist_func) {
-    data_x_ = data_xy.first;
-    data_y_ = data_xy.second;
-    error_ = eps;
-    max_iter_ = max_iter;
-
-    details::SetDistFunc(dist_func, dist_func_);
-
-    // TODO
-}
-
-namespace project::details {
+namespace {
 
 std::map<FuncName, ActivationFunction> act_functions = {
     {"Sigmoid",
@@ -33,14 +18,48 @@ std::map<FuncName, DistanceFunction> dist_functions = {
     {"Manhattan", DistanceFunction(dist_func_options::Manhattan::Dist,
                                    dist_func_options::Manhattan::DerivativeDist)}};
 
-}  // namespace project::details
-
-void project::details::SetActFuncs(FuncNames names, ActFuncs& place) {
+void SetActFuncs(FuncNames names, Net::ActFuncs& place) {
     for (const FuncName& name : names) {
         place.push_back(act_functions[name]);
     }
 }
 
-void project::details::SetDistFunc(FuncName name, DistanceFunction& place) {
+void SetDistFunc(FuncName name, DistanceFunction& place) {
     place = dist_functions[name];
 }
+
+}  // namespace
+
+Net::Net(Sizes layer_sizes, FuncNames act_funcs) : layer_sizes_(layer_sizes) {
+    SetActFuncs(act_funcs, act_funcs_);
+
+    // TODO setting layers and random matrices
+}
+
+void Net::Train(const Data& data, double eps, size_t max_iter,
+                /*Alg,*/ const FuncName& dist_func) {
+    data_x_ = data.first;
+    data_y_ = data.second;
+    error_ = eps;
+    max_iter_ = max_iter;
+
+    SetDistFunc(dist_func, dist_func_);
+
+    // TODO "training" part of Train
+}
+
+Vector Net::Run(Vector x) {
+    for (Layer& layer : layers_) {
+        x = layer.Calc(x);
+    }
+    return x;
+}
+
+void Net::Reset() {
+    for (Layer& layer : layers_) {
+        layer.Reset();
+    }
+    // TODO setting new random matrices on layers
+}
+
+}  // namespace project
