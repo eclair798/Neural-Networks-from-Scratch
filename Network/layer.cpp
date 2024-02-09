@@ -1,3 +1,5 @@
+#pragma once
+
 #include "layer.h"
 
 namespace project {
@@ -14,17 +16,15 @@ Matrix GenerateRandomNormalMatrix(Index rows, Index cols) {
 
 }  // namespace
 
-Vector Layer::Calc(Vector x) {
+Vector Layer::Calc(const Vector& x) const {
     return sigma_.Calc(matrix_a_ * x + vector_b_);
 }
-
-Layer::Layer(ActivationFunction func) : sigma_(func) {
+Layer::Layer(Index input_size, Index output_size, ActivationFunction func)
+    : input_size_(input_size), output_size_(output_size), sigma_(std::move(func)) {
     // TODO generating random matrix_a & vector_b
 }
-
 void Layer::Reset() {
-    vector_u_.setZero();
-
+    // TODO set new random matrices
 }
 
 }  // namespace project

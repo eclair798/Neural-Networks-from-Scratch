@@ -3,36 +3,25 @@
 #include "activation_function.h"
 
 namespace project {
-
 class Layer {
 public:
-    using Index = size_t;
-
     Layer() = default;
+    Layer(Index input_size, Index output_size, ActivationFunction func);
 
-    Layer(ActivationFunction func);
-
-    void Reset();
+    void Reset();  //
 
     // x -> (ax + b) -> sigma(ax + b)
-    Vector Calc(Vector x);  // TODO
+    Vector Calc(const Vector& x) const;  // TODO
 
-    Matrix get_a_correction(); // TODO
-
-    Vector get_b_correction(); // TODO
-
-    RowVector PushU();  // TODO
+    Matrix get_a_correction();         // TODO
+    Vector get_b_correction();         // TODO
+    RowVector PushU(const Vector& u);  // TODO
 
 private:
-    Index layer_index_;
-
-    //    Matrix matrix_u_;
-    RowVector vector_u_;
-
-    Matrix matrix_a_;
-    Vector vector_b_;
-
+    Index input_size_;
+    Index output_size_;
+    Matrix matrix_a_;  // outputS * inputS
+    Vector vector_b_;  // outputS * 1
     ActivationFunction sigma_;
 };
-
 }  // namespace project

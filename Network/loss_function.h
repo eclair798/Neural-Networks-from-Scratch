@@ -1,44 +1,37 @@
-#pragma one
+#pragma once
 
-#include "details.h"
+#include "definitions.h"
 
 namespace project {
 
-class DistanceFunction {
+enum class LFName { SquaredEuclidean, Manhattan };
+
+class LossFunction {
 public:
-    DistanceFunction() = default;
+    LossFunction() = default;
+    LossFunction(FuncDist calc, FuncGrad der_calc);
+    static LossFunction Make(LFName name);
 
-    DistanceFunction(FuncDist calc, FuncDerivativeDist der_calc)
-        : dist_(calc), derivative_dist_(der_calc) {
-    }
-
-    DataType Dist(Vector x, Vector y);
-
-    Vector DerivativeDist(Vector x, Vector y);
-
-    DataType Dist(Matrix x, Matrix y);
-
-    Matrix DerivativeDist(Matrix x, Matrix y);
+    DataType Dist(const Vector& x, const Vector& y) const;
+    Vector Grad(const Vector& x, const Vector& y) const;
+    DataType Dist(const Matrix& x, const Matrix& y) const;
+    Matrix Grad(const Matrix& x, const Matrix& y) const;
 
 private:
     FuncDist dist_;
-    FuncDerivativeDist derivative_dist_;
+    FuncGrad derivative_dist_;
 };
 
-namespace dist_func_options {
-
+namespace loss_func_options {
 class SquaredEuclidean {
 public:
-    static DataType Dist(Vector x, Vector y);
-    static Vector DerivativeDist(Vector x, Vector y);
+    static DataType Dist(const Vector& x, const Vector& y);
+    static Vector Grad(const Vector& x, const Vector& y);
 };
-
 class Manhattan {
 public:
-    static DataType Dist(Vector x, Vector y);
-    static Vector DerivativeDist(Vector x, Vector y);
+    static DataType Dist(const Vector& x, const Vector& y);
+    static Vector Grad(const Vector& x, const Vector& y);
 };
-
-}  // namespace dist_func_options
-
+}  // namespace loss_func_options
 }  // namespace project
