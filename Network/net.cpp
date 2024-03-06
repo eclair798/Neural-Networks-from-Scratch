@@ -14,6 +14,7 @@ void Net::Train(const Data& data, DataType eps, size_t max_iter,
                 /*Alg,*/ const LFName& dist_func) {
     dist_func_ = LossFunction::Make(dist_func);
     // TODO "training" part of Train
+
 }
 
 Vector Net::Calc(const Vector& x) const {
@@ -27,8 +28,6 @@ Vector Net::Calc(const Vector& x) const {
 // void Net::ImproveAccuracy() {
 // }
 //
-// DataType Net::CalculateError() {
-//     return 0;
-// }
+
 
 }  // namespace project

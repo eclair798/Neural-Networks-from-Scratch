@@ -21,10 +21,25 @@ Vector Layer::Calc(const Vector& x) const {
 }
 Layer::Layer(Index input_size, Index output_size, ActivationFunction func)
     : input_size_(input_size), output_size_(output_size), sigma_(std::move(func)) {
-    // TODO generating random matrix_a & vector_b
+    SetNewParams();
 }
-void Layer::Reset() {
+void Layer::SetNewParams() {
     // TODO set new random matrices
+}
+
+RowVector Layer::PushU(const RowVector& u, const Vector& input) {
+    return u * sigma_.Derivative(matrix_a_ * input + vector_b_) * matrix_a_;
+}
+Matrix Layer::PushU(const Matrix& u, const Matrix& input) {
+    return project::Matrix();
+}
+
+
+Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) {
+    return sigma_.Derivative(matrix_a_ * input + vector_b_) * u.transpose() * matrix_a_;
+}
+Vector Layer::GetBCorrection(const RowVector& u, const Vector& input) {
+    return sigma_.Derivative(matrix_a_ * input + vector_b_) * u.transpose();
 }
 
 }  // namespace project

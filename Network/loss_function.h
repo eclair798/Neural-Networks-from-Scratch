@@ -19,7 +19,7 @@ public:
 
 private:
     FuncDist dist_;
-    FuncGrad derivative_dist_;
+    FuncGrad grad_;
 };
 
 namespace loss_func_options {

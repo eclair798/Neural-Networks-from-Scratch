@@ -7,15 +7,19 @@ class Layer {
 public:
     Layer() = default;
     Layer(Index input_size, Index output_size, ActivationFunction func);
-
-    void Reset();  //
-
     // x -> (ax + b) -> sigma(ax + b)
     Vector Calc(const Vector& x) const;  // TODO
 
-    Matrix get_a_correction();         // TODO
-    Vector get_b_correction();         // TODO
-    RowVector PushU(const Vector& u);  // TODO
+    RowVector PushU(const RowVector& u, const Vector& input);
+    Matrix PushU(const Matrix& u, const Matrix& input);
+
+    Matrix GetACorrection(const RowVector& u, const Vector& input);
+    Matrix GetACorrection(const Matrix& u, const Matrix& input);
+
+    Vector GetBCorrection(const RowVector& u, const Vector& input);
+    Matrix GetBCorrection(const Matrix& u, const Matrix& input);
+
+    void SetNewParams();  // TODO
 
 private:
     Index input_size_;

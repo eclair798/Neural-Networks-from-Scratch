@@ -11,7 +11,6 @@
 namespace project {
 
 using DataType = double;
-
 using Matrix = Eigen::MatrixXd;
 using Index = Eigen::Index;
 using Vector = Eigen::VectorXd;

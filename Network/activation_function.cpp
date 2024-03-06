@@ -44,7 +44,6 @@ DataType Sigmoid::Calc(DataType x) {
     return 1.0 / (1.0 + exp(-x));
 }
 DataType Sigmoid::Derivative(DataType x) {
-    //    return exp(x) / (exp(2.0 * x) + 2.0 * exp(x) + 1.0);
     return 1.0 / (exp(x) + exp(-x) + 2.0);
 }
 
@@ -56,10 +55,10 @@ DataType Tanh::Derivative(DataType x) {
 }
 
 DataType ReLU::Calc(DataType x) {
-    return (x > 0) ? x : 0;
+    return (x > 0) ? x : 0.0;
 }
 DataType ReLU::Derivative(DataType x) {
-    return (x > 0) ? 1.0 : 0;
+    return (x > 0) ? 1.0 : 0.0;
 }
 
 DataType Linear::Calc(DataType x) {

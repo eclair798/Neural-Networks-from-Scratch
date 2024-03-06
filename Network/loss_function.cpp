@@ -5,7 +5,7 @@
 namespace project {
 
 LossFunction::LossFunction(FuncDist calc, FuncGrad der_calc)
-    : dist_(std::move(calc)), derivative_dist_(std::move(der_calc)) {
+    : dist_(std::move(calc)), grad_(std::move(der_calc)) {
 }
 LossFunction LossFunction::Make(LFName name) {
     switch (name) {
@@ -22,10 +22,10 @@ DataType LossFunction::Dist(const Vector& x, const Vector& y) const {
     return dist_(x, y);
 }
 Vector LossFunction::Grad(const Vector& x, const Vector& y) const {
-    return derivative_dist_(x, y);
+    return grad_(x, y);
 }
 DataType LossFunction::Dist(const Matrix& x, const Matrix& y) const {
-    DataType distance = 0;
+    DataType distance = 0.0;
     Index size = x.cols();
     for (Index col_i = 0; col_i < size; ++col_i) {
         Vector x_i = x.col(col_i);
@@ -59,7 +59,7 @@ DataType Manhattan::Dist(const Vector& x, const Vector& y) {
     return (x - y).lpNorm<1>();
 }
 Vector Manhattan::Grad(const Vector& x, const Vector& y) {
-    Vector vector_u = (x - y).unaryExpr([](DataType x) { return x > 0 ? 1.0 : -1.0; });
+    Vector vector_u = (x - y).unaryExpr([](DataType v) { return v > 0 ? 1.0 : -1.0; });
     return vector_u;
 }
 }  // namespace loss_func_options
