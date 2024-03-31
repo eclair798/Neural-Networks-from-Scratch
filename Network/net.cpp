@@ -4,30 +4,115 @@
 
 namespace project {
 
+namespace {
+Batches DivideIntoBatches(const Data& data, Index count) {
+    assert(data.input_vectors.cols() == data.output_vectors.cols() &&
+           "The number of input and output vectors differs");
+    Index total_size = data.input_vectors.cols();
+    count = std::min(total_size, count);
+    Index batch_size = total_size / count;
+    Batches batches(count);
+    for (Counter i = 0; i < count; ++i) {
+        Index from = i * batch_size;
+        Index to = from + batch_size - 1;
+        if (to + batch_size > total_size) {
+            to = total_size;
+        }
+        Index input_dim = data.input_vectors.rows();
+        Matrix input = data.input_vectors.block(0, from, input_dim, to - from + 1);
+        Matrix output = data.output_vectors.block(0, from, input_dim, to - from + 1);
+        batches.emplace_back(input, output);
+    }
+}
+}  // namespace
+
 Net::Net(Sizes layer_sizes, const AFNames& act_funcs) {
-    for (size_t i = 0; i < layer_sizes.size() - 1; ++i) {
+    assert(!layer_sizes.empty() && "There cannot be zero layers");
+    assert(layer_sizes.size() == act_funcs.size() + 1 &&
+           "The number of layers does not correspond to the number of activation functions");
+    for (Counter i = 0; i < layer_sizes.size() - 1; ++i) {
         layers_.emplace_back(layer_sizes[i], layer_sizes[i + 1],
                              ActivationFunction::Make(act_funcs[i]));
     }
 }
-void Net::Train(const Data& data, DataType eps, size_t max_iter,
-                /*Alg,*/ const LFName& dist_func) {
-    dist_func_ = LossFunction::Make(dist_func);
-    // TODO "training" part of Train
+Net::Info Net::Train(const Data& data, DataType eps, Counter max_iter,
+                     /*Alg,*/ const LFName& dist_func, Index batches_count) {
+    assert(data.input_vectors.rows() == layers_.front().GetInputSize() &&
+           data.output_vectors.rows() == layers_.back().GetOutputSize() &&
+           "Mismatch with the size of the specified layers");
+    assert(data.input_vectors.cols() == data.output_vectors.cols() &&
+           "The number of input and output vectors differs");
 
+    dist_func_ = LossFunction::Make(dist_func);
+    Deltas average_deltas(layers_.size());
+    Deltas cur_deltas;
+    Batches batches = DivideIntoBatches(data, batches_count);
+    DataType learning_rate;
+
+    DataType error_rate = dist_func_.Dist(Calc(data.input_vectors), data.output_vectors);
+    Counter iterations_count = 0;
+    for (Counter i = 1; i < max_iter; ++i) {
+        learning_rate = 1 / i;
+        for (const Data& batch : batches) {
+            cur_deltas = GetCorrections(batch);
+            for (Counter j = 0; j < layers_.size(); ++j) {
+                average_deltas[j].delta_a += (cur_deltas[j].delta_a / layers_.size());
+                average_deltas[j].delta_b += (cur_deltas[j].delta_b / layers_.size());
+            }
+        }
+        for (Counter j = 0; j < layers_.size(); ++j) {
+            layers_[i].CorrectA(average_deltas[j].delta_a, learning_rate);
+            layers_[i].CorrectB(average_deltas[j].delta_b, learning_rate);
+        }
+        error_rate = dist_func_.Dist(Calc(data.input_vectors), data.output_vectors);
+        iterations_count = i;
+        if (error_rate < eps) {
+            break;
+        }
+    }
+    return {error_rate, iterations_count};
 }
 
 Vector Net::Calc(const Vector& x) const {
+    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vector");
     Vector cur_x = x;
     for (const Layer& layer : layers_) {
         cur_x = layer.Calc(cur_x);
     }
     return x;
 }
+Matrix Net::Calc(const Matrix& x) const {
+    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vectors");
+    Matrix cur_x = x;
+    for (const Layer& layer : layers_) {
+        cur_x = layer.Calc(cur_x);
+    }
+    return x;
+}
 
-// void Net::ImproveAccuracy() {
-// }
-//
+Net::Deltas Net::GetCorrections(const Data& data) const {
+    assert(data.input_vectors.rows() == layers_.front().GetInputSize() &&
+           data.output_vectors.rows() == layers_.back().GetOutputSize() &&
+           "Mismatch with the size of the specified layers");
+    assert(data.input_vectors.cols() == data.output_vectors.cols() &&
+           "The number of input and output vectors differs");
 
+    Counter calc_sizes = layers_.size() + 1;
+    Calculations calcs(calc_sizes);
+    calcs.front() = data.input_vectors;
+    Vector cur_x = calcs.front();
+    for (Counter i = 1; i < calc_sizes; ++i) {
+        calcs[i] = layers_[i - 1].Calc(calcs[i - 1]);
+    }
+    Matrix ui = dist_func_.Grad(calcs[calc_sizes - 1], data.output_vectors);
+    Deltas deltas(layers_.size());
+    for (Counter i = layers_.size() - 1; i >= 0; ++i) {
+        Matrix delta_a = layers_[i].GetACorrection(ui, calcs[i]);
+        Vector delta_b = layers_[i].GetBCorrection(ui, calcs[i]);
+        deltas[i] = {delta_a, delta_b};
+        ui = layers_[i].PushU(ui, calcs[i]);
+    }
+    return deltas;
+}
 
 }  // namespace project

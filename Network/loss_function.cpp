@@ -15,16 +15,25 @@ LossFunction LossFunction::Make(LFName name) {
         case LFName::Manhattan:
             return LossFunction(loss_func_options::Manhattan::Dist,
                                 loss_func_options::Manhattan::Grad);
+        default:
+            assert(false && "Unknown Activation function");
     }
 }
 
 DataType LossFunction::Dist(const Vector& x, const Vector& y) const {
+    assert(x.rows() == y.rows() &&
+           "The distance between vectors of different dimensions cannot be considered");
     return dist_(x, y);
 }
 Vector LossFunction::Grad(const Vector& x, const Vector& y) const {
+    assert(x.rows() == y.rows() &&
+           "The distance between vectors of different dimensions cannot be considered");
     return grad_(x, y);
 }
 DataType LossFunction::Dist(const Matrix& x, const Matrix& y) const {
+    assert(x.rows() == y.rows() &&
+           "The distance between vectors of different dimensions cannot be considered");
+    assert(x.cols() == y.cols() && "The number of vectors differs");
     DataType distance = 0.0;
     Index size = x.cols();
     for (Index col_i = 0; col_i < size; ++col_i) {
@@ -36,6 +45,9 @@ DataType LossFunction::Dist(const Matrix& x, const Matrix& y) const {
     return distance;
 }
 Matrix LossFunction::Grad(const Matrix& x, const Matrix& y) const {
+    assert(x.rows() == y.rows() &&
+           "The distance between vectors of different dimensions cannot be considered");
+    assert(x.cols() == y.cols() && "The number of vectors differs");
     Matrix matrix_u(x.cols(), x.rows());
     Index size = x.cols();
     for (Index col_i = 0; col_i < size; ++col_i) {

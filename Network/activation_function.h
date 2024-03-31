@@ -16,6 +16,7 @@ public:
     DataType Derivative(DataType x) const;
     Vector Calc(const Vector& vector) const;
     Matrix Derivative(const Vector& vector) const;
+    Vector Calc(const Matrix& matrix) const;
 
 private:
     FuncAct calc_;
