@@ -4,3 +4,6 @@
 [submodule "EigenRand"]
 	path = EigenRand
 	url = https://github.com/bab2min/EigenRand
+[submodule "mnist"]
+	path = mnist
+	url = https://github.com/wichtounet/mnist.git
