@@ -93,11 +93,13 @@ void Layer::SetNewParams() {
 }
 
 void Layer::CorrectA(const Matrix& delta, DataType learning_rate) {
-    assert(matrix_a_.cols() == delta.cols() && matrix_a_.rows() == delta.rows() && "Incorrect dimension of delta");
+    assert(matrix_a_.cols() == delta.cols() && matrix_a_.rows() == delta.rows() &&
+           "Incorrect dimension of delta");
     matrix_a_ = matrix_a_ - delta * learning_rate;
 }
 void Layer::CorrectB(const Vector& delta, DataType learning_rate) {
-    assert(vector_b_.cols() == delta.cols() && vector_b_.rows() == delta.rows() && "Incorrect dimension of delta");
+    assert(vector_b_.cols() == delta.cols() && vector_b_.rows() == delta.rows() &&
+           "Incorrect dimension of delta");
     vector_b_ = vector_b_ - delta * learning_rate;
 }
 

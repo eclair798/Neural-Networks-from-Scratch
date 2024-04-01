@@ -15,12 +15,13 @@ Batches DivideIntoBatches(const Data& data, Index count) {
     for (Counter i = 0; i < count; ++i) {
         Index from = i * batch_size;
         Index to = from + batch_size - 1;
-        if (to + batch_size > total_size) {
-            to = total_size;
+        if (to + batch_size >= total_size) {
+            to = total_size - 1;
         }
         Index input_dim = data.input_vectors.rows();
+        Index output_dim = data.output_vectors.rows();
         Matrix input = data.input_vectors.block(0, from, input_dim, to - from + 1);
-        Matrix output = data.output_vectors.block(0, from, input_dim, to - from + 1);
+        Matrix output = data.output_vectors.block(0, from, output_dim, to - from + 1);
         batches.emplace_back(input, output);
     }
 }
@@ -35,27 +36,29 @@ Net::Net(Sizes layer_sizes, const AFNames& act_funcs) {
                              ActivationFunction::Make(act_funcs[i]));
     }
 }
-Net::Info Net::Train(const Data& data, DataType eps, Counter max_iter,
-                     /*Alg,*/ const LFName& dist_func, Index batches_count) {
-    assert(data.input_vectors.rows() == layers_.front().GetInputSize() &&
-           data.output_vectors.rows() == layers_.back().GetOutputSize() &&
+Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
+                     DataType eps, Counter max_iter, Index batches_count) {
+    assert(train_data.input_vectors.rows() == layers_.front().GetInputSize() &&
+           train_data.output_vectors.rows() == layers_.back().GetOutputSize() &&
            "Mismatch with the size of the specified layers");
-    assert(data.input_vectors.cols() == data.output_vectors.cols() &&
+    assert(train_data.input_vectors.cols() == train_data.output_vectors.cols() &&
            "The number of input and output vectors differs");
 
     dist_func_ = LossFunction::Make(dist_func);
     Deltas average_deltas(layers_.size());
     Deltas cur_deltas;
-    Batches batches = DivideIntoBatches(data, batches_count);
+    Batches batches = DivideIntoBatches(train_data, batches_count);
     DataType learning_rate;
 
-    DataType error_rate = dist_func_.Dist(Calc(data.input_vectors), data.output_vectors);
+    Matrix res = Calc(train_data.input_vectors);
+    DataType error_rate = dist_func_.Dist(res, train_data.output_vectors);
     Counter iterations_count = 0;
     for (Counter i = 1; i < max_iter; ++i) {
         learning_rate = 1 / i;
         for (const Data& batch : batches) {
             cur_deltas = GetCorrections(batch);
             for (Counter j = 0; j < layers_.size(); ++j) {
+
                 average_deltas[j].delta_a += (cur_deltas[j].delta_a / layers_.size());
                 average_deltas[j].delta_b += (cur_deltas[j].delta_b / layers_.size());
             }
@@ -64,7 +67,7 @@ Net::Info Net::Train(const Data& data, DataType eps, Counter max_iter,
             layers_[i].CorrectA(average_deltas[j].delta_a, learning_rate);
             layers_[i].CorrectB(average_deltas[j].delta_b, learning_rate);
         }
-        error_rate = dist_func_.Dist(Calc(data.input_vectors), data.output_vectors);
+        error_rate = dist_func_.Dist(Calc(test_data.input_vectors), test_data.output_vectors);
         iterations_count = i;
         if (error_rate < eps) {
             break;
@@ -82,7 +85,8 @@ Vector Net::Calc(const Vector& x) const {
     return x;
 }
 Matrix Net::Calc(const Matrix& x) const {
-    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vectors");
+    assert(x.rows() == layers_.front().GetInputSize() &&
+           "Incorrect dimension of the input vectors");
     Matrix cur_x = x;
     for (const Layer& layer : layers_) {
         cur_x = layer.Calc(cur_x);
