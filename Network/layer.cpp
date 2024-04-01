@@ -36,12 +36,14 @@ RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
     Vector lin_output = matrix_a_ * input + vector_b_;
-    return u * sigma_.Derivative(lin_output) * matrix_a_;
+    RowVector res = u * sigma_.Derivative(lin_output) * matrix_a_;
+    return res;
 }
 Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
-    Matrix result(u.rows(), input.size());
+    assert(u.rows() == input.cols() && "Incorrect count of vectors");
+    Matrix result(u.rows(), input.rows());
     for (Index i = 0; i < result.rows(); ++i) {
         RowVector vec_u = u.row(i);
         Vector vec_input = input.col(i);
@@ -53,12 +55,15 @@ Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
 Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
+
     Vector lin_output = matrix_a_ * input + vector_b_;
-    return sigma_.Derivative(lin_output) * u.transpose() * input;
+    Matrix res = sigma_.Derivative(lin_output) * u.transpose() * input.transpose();
+    return res;
 }
 Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
+    assert(u.rows() == input.cols() && "Incorrect count of vectors");
     Matrix result(matrix_a_.rows(), matrix_a_.cols());
     for (Index i = 0; i < u.rows(); ++i) {
         RowVector vec_u = u.row(i);
@@ -77,6 +82,7 @@ Vector Layer::GetBCorrection(const RowVector& u, const Vector& input) const {
 Matrix Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
+    assert(u.rows() == input.cols() && "Incorrect count of vectors");
     Vector result(vector_b_.rows());
     for (Index i = 0; i < u.rows(); ++i) {
         RowVector vec_u = u.row(i);

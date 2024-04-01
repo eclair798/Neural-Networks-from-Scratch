@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <initializer_list>
 #include <iostream>
 #include <memory>

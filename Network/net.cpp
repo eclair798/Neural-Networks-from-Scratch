@@ -11,7 +11,7 @@ Batches DivideIntoBatches(const Data& data, Index count) {
     Index total_size = data.input_vectors.cols();
     count = std::min(total_size, count);
     Index batch_size = total_size / count;
-    Batches batches(count);
+    Batches batches;
     for (Counter i = 0; i < count; ++i) {
         Index from = i * batch_size;
         Index to = from + batch_size - 1;
@@ -24,6 +24,7 @@ Batches DivideIntoBatches(const Data& data, Index count) {
         Matrix output = data.output_vectors.block(0, from, output_dim, to - from + 1);
         batches.emplace_back(input, output);
     }
+    return batches;
 }
 }  // namespace
 
@@ -52,23 +53,34 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
 
     Matrix res = Calc(train_data.input_vectors);
     DataType error_rate = dist_func_.Dist(res, train_data.output_vectors);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "START.\n";
     Counter iterations_count = 0;
-    for (Counter i = 1; i < max_iter; ++i) {
-        learning_rate = 1 / i;
+    for (Counter i = 1; i <= max_iter; ++i) {
         for (const Data& batch : batches) {
             cur_deltas = GetCorrections(batch);
             for (Counter j = 0; j < layers_.size(); ++j) {
-
-                average_deltas[j].delta_a += (cur_deltas[j].delta_a / layers_.size());
-                average_deltas[j].delta_b += (cur_deltas[j].delta_b / layers_.size());
+                if (i == 1) {
+                    average_deltas[j].delta_a = (cur_deltas[j].delta_a / batches.size());
+                    average_deltas[j].delta_b = (cur_deltas[j].delta_b / batches.size());
+                } else {
+                    average_deltas[j].delta_a += (cur_deltas[j].delta_a / batches.size());
+                    average_deltas[j].delta_b += (cur_deltas[j].delta_b / batches.size());
+                }
             }
         }
+        learning_rate = 0.001;
         for (Counter j = 0; j < layers_.size(); ++j) {
-            layers_[i].CorrectA(average_deltas[j].delta_a, learning_rate);
-            layers_[i].CorrectB(average_deltas[j].delta_b, learning_rate);
+            layers_[j].CorrectA(average_deltas[j].delta_a, learning_rate);
+            layers_[j].CorrectB(average_deltas[j].delta_b, learning_rate);
         }
         error_rate = dist_func_.Dist(Calc(test_data.input_vectors), test_data.output_vectors);
         iterations_count = i;
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);
+        std::cout << "iteration: " << iterations_count << ";\t error rate: " << error_rate
+                  << ";\t time from start: " << duration.count() << "\n";
         if (error_rate < eps) {
             break;
         }
@@ -82,7 +94,7 @@ Vector Net::Calc(const Vector& x) const {
     for (const Layer& layer : layers_) {
         cur_x = layer.Calc(cur_x);
     }
-    return x;
+    return cur_x;
 }
 Matrix Net::Calc(const Matrix& x) const {
     assert(x.rows() == layers_.front().GetInputSize() &&
@@ -91,7 +103,7 @@ Matrix Net::Calc(const Matrix& x) const {
     for (const Layer& layer : layers_) {
         cur_x = layer.Calc(cur_x);
     }
-    return x;
+    return cur_x;
 }
 
 Net::Deltas Net::GetCorrections(const Data& data) const {
@@ -104,13 +116,12 @@ Net::Deltas Net::GetCorrections(const Data& data) const {
     Counter calc_sizes = layers_.size() + 1;
     Calculations calcs(calc_sizes);
     calcs.front() = data.input_vectors;
-    Vector cur_x = calcs.front();
     for (Counter i = 1; i < calc_sizes; ++i) {
         calcs[i] = layers_[i - 1].Calc(calcs[i - 1]);
     }
     Matrix ui = dist_func_.Grad(calcs[calc_sizes - 1], data.output_vectors);
     Deltas deltas(layers_.size());
-    for (Counter i = layers_.size() - 1; i >= 0; ++i) {
+    for (Counter i = layers_.size() - 1; i >= 0; --i) {
         Matrix delta_a = layers_[i].GetACorrection(ui, calcs[i]);
         Vector delta_b = layers_[i].GetBCorrection(ui, calcs[i]);
         deltas[i] = {delta_a, delta_b};

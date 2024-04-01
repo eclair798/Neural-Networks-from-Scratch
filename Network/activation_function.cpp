@@ -40,7 +40,7 @@ Matrix ActivationFunction::Derivative(const Vector& vector) const {
     Vector new_vector = vector.unaryExpr([this](DataType x) { return Derivative(x); });
     return new_vector.asDiagonal();
 }
-Vector ActivationFunction::Calc(const Matrix& matrix) const {
+Matrix ActivationFunction::Calc(const Matrix& matrix) const {
     Matrix new_matrix = matrix.array().unaryExpr([this](DataType x) { return Calc(x); }).matrix();
     return new_matrix;
 }

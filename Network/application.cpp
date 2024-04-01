@@ -1,11 +1,5 @@
 #include "application.h"
 
-#include <exception>
-#include <iostream>
-#include <random>
-#include <utility>
-#include <vector>
-
 namespace project {
 int Application::Run() {
     // MNIST_DATA_LOCATION set by MNIST cmake config
@@ -36,11 +30,11 @@ int Application::Run() {
         test.output_vectors(0, i) = static_cast<double>(dataset.test_labels[i]);
     }
 
-    Net net({num_input_pixels, 200, 50, 10, num_output_pixels},
+    Net net({num_input_pixels, 5, 4, 3, num_output_pixels},
             {AFName::ReLU, AFName::ReLU, AFName::ReLU, AFName::ReLU});
-    Net::Info info = net.Train(train, test, LFName::SquaredEuclidean);
-    std::cout << "iterations: " << info.iterations_count << "\terror rate:" << info.error_rate
-              << "\n";
+    Net::Info info = net.Train(train, test, LFName::SquaredEuclidean, 0.1, 25);
+        std::cout << "FINAL RESULT:\n" << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
+                  << "\n";
     return 0;
 }
 }  // namespace project
