@@ -24,7 +24,8 @@ public:
 
     Net(Sizes layer_sizes, const AFNames& act_funcs);
     Info Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
-               DataType eps = 0.01, Counter max_iter = 10, Index batches_count = 50);
+               DataType eps = 0.01, Counter max_iter = 10, Index batches_count = 50,
+               bool print_info = true);
     Vector Calc(const Vector& x) const;
     Matrix Calc(const Matrix& x) const;
 

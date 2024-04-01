@@ -38,7 +38,7 @@ Net::Net(Sizes layer_sizes, const AFNames& act_funcs) {
     }
 }
 Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
-                     DataType eps, Counter max_iter, Index batches_count) {
+                     DataType eps, Counter max_iter, Index batches_count, bool print_info) {
     assert(train_data.input_vectors.rows() == layers_.front().GetInputSize() &&
            train_data.output_vectors.rows() == layers_.back().GetOutputSize() &&
            "Mismatch with the size of the specified layers");
@@ -79,8 +79,10 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
         iterations_count = i;
         auto now = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);
-        std::cout << "iteration: " << iterations_count << ";\t error rate: " << error_rate
-                  << ";\t time from start: " << duration.count() << "\n";
+        if (print_info) {
+            std::cout << "iteration: " << iterations_count << ";\t error rate: " << error_rate
+                      << ";\t time from start: " << duration.count() << "\n";
+        }
         if (error_rate < eps) {
             break;
         }
