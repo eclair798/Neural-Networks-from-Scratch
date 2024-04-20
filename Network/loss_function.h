@@ -4,7 +4,7 @@
 
 namespace project {
 
-enum class LFName { SquaredEuclidean, Manhattan };
+enum class LFName { SquaredEuclidean, Manhattan, CrossEntropy };
 
 class LossFunction {
 public:
@@ -29,6 +29,12 @@ public:
     static Vector Grad(const Vector& x, const Vector& y);
 };
 class Manhattan {
+public:
+    static DataType Dist(const Vector& x, const Vector& y);
+    static Vector Grad(const Vector& x, const Vector& y);
+};
+
+class CrossEntropy {
 public:
     static DataType Dist(const Vector& x, const Vector& y);
     static Vector Grad(const Vector& x, const Vector& y);

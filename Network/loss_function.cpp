@@ -15,6 +15,9 @@ LossFunction LossFunction::Make(LFName name) {
         case LFName::Manhattan:
             return LossFunction(loss_func_options::Manhattan::Dist,
                                 loss_func_options::Manhattan::Grad);
+        case LFName::CrossEntropy:
+            return LossFunction(loss_func_options::CrossEntropy::Dist,
+                                loss_func_options::CrossEntropy::Grad);
         default:
             assert(false && "Unknown Activation function");
     }
@@ -74,5 +77,13 @@ Vector Manhattan::Grad(const Vector& x, const Vector& y) {
     Vector vector_u = (x - y).unaryExpr([](DataType v) { return v > 0 ? 1.0 : -1.0; });
     return vector_u;
 }
+
+DataType CrossEntropy::Dist(const Vector& x, const Vector& y) {
+    return -(y.array() * x.array().log()).sum();
+}
+Vector CrossEntropy::Grad(const Vector& x, const Vector& y) {
+    return -(y.array() / x.array());
+}
+
 }  // namespace loss_func_options
 }  // namespace project

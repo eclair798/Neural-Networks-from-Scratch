@@ -10,15 +10,17 @@ RandGen& GetRng() {
     static RandGen rng = 1;
     return rng;
 }
-Matrix GenerateRandomNormalMatrix(Index rows, Index cols) {
-    return Eigen::Rand::normal<Matrix>(rows, cols, GetRng());
+Matrix GenerateRandomNormalMatrix(Index rows, Index cols, DataType norm = 1.0 / 12) {
+    assert(norm != 0 && "Zero norm");
+    Matrix result = Eigen::Rand::normal<Matrix>(rows, cols, GetRng()) * norm;
+    assert(result.allFinite() && "Nan matrix");
+    return result;
 }
 }  // namespace
 
 Layer::Layer(Index input_size, Index output_size, ActivationFunction func)
     : input_size_(input_size), output_size_(output_size), sigma_(std::move(func)) {
     assert(input_size != 0 && output_size != 0 && "The dimension of the layer cannot be zero");
-    SetNewParams();
 }
 
 Vector Layer::Calc(const Vector& input) const {
@@ -29,7 +31,7 @@ Vector Layer::Calc(const Vector& input) const {
 Matrix Layer::Calc(const Matrix& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
     Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
-    return sigma_.Calc(lin_output);
+    return sigma_.CalcMatrix(lin_output);
 }
 
 RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
@@ -57,7 +59,8 @@ Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
 
     Vector lin_output = matrix_a_ * input + vector_b_;
-    Matrix res = sigma_.Derivative(lin_output) * u.transpose() * input.transpose();
+    Matrix der = sigma_.Derivative(lin_output);
+    Matrix res = der * u.transpose() * input.transpose();
     return res;
 }
 Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
@@ -93,9 +96,24 @@ Matrix Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
     return result;
 }
 
-void Layer::SetNewParams() {
+void Layer::SetParam(Matrix&& matrix_a, Vector&& vector_b) {
+    assert(matrix_a.rows() == output_size_ && matrix_a.cols() == input_size_ &&
+           "Incorrect matrix size");
+    assert(vector_b.rows() == output_size_ && "Incorrect vector size");
+    matrix_a_ = std::move(matrix_a);
+    vector_b_ = std::move(vector_b);
+}
+
+void Layer::SetRandParam() {
     matrix_a_ = GenerateRandomNormalMatrix(output_size_, input_size_);
     vector_b_ = GenerateRandomNormalMatrix(output_size_, 1);
+}
+
+Matrix Layer::GetA() {
+    return matrix_a_;
+}
+Vector Layer::GetB() {
+    return vector_b_;
 }
 
 void Layer::CorrectA(const Matrix& delta, DataType learning_rate) {

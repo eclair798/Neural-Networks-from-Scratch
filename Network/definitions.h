@@ -14,7 +14,7 @@
 
 namespace project {
 
-using DataType = double;
+using DataType = Eigen::MatrixXd::Scalar;
 using Matrix = Eigen::MatrixXd;
 using Index = Eigen::Index;
 using Vector = Eigen::VectorXd;
@@ -23,10 +23,13 @@ using Sizes = const std::vector<Index>&;
 
 using Counter = int;
 
-using FuncAct = std::function<DataType(DataType)>;
-using FuncDerivativeAct = std::function<DataType(DataType)>;
+using FuncAct = std::function<Vector(Vector)>;
+using FuncDerivativeAct = std::function<Matrix(Vector)>;
+
 using FuncDist = std::function<DataType(const Vector&, const Vector&)>;
 using FuncGrad = std::function<RowVector(const Vector&, const Vector&)>;
+
+using Path = const std::string&;
 
 struct Data {
     Matrix input_vectors;

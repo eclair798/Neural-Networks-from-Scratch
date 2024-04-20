@@ -20,7 +20,12 @@ public:
     Vector GetBCorrection(const RowVector& u, const Vector& input) const;
     Matrix GetBCorrection(const Matrix& u, const Matrix& input) const;
 
-    void SetNewParams();
+    void SetParam(Matrix&& matrix_a, Vector&& vector_b);
+
+    void SetRandParam();
+
+    Matrix GetA();
+    Vector GetB();
 
     void CorrectA(const Matrix& delta, DataType learning_rate);
     void CorrectB(const Vector& delta, DataType learning_rate);

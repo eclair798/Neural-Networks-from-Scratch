@@ -2,6 +2,7 @@
 
 #include "loss_function.h"
 #include "layer.h"
+#include "parameters_handler.h"
 
 namespace project {
 
@@ -22,10 +23,10 @@ public:
         Counter iterations_count;
     };
 
-    Net(Sizes layer_sizes, const AFNames& act_funcs);
+    Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path = "", Path output_path = "");
     Info Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
-               DataType eps = 0.01, Counter max_iter = 10, Index batches_count = 50,
-               bool print_info = true);
+               DataType eps = 0.01, Counter max_iter = 250, DataType initial_learning_rate = 0.1,
+               DataType decay = 0, Index batch_size = 1, bool print_info = true);
     Vector Calc(const Vector& x) const;
     Matrix Calc(const Matrix& x) const;
 
@@ -33,6 +34,7 @@ private:
     Deltas GetCorrections(const Data& data) const;
     Layers layers_;
     LossFunction dist_func_;
+    ParametersHandler params_handler_;
 };
 
 }  // namespace project
