@@ -31,8 +31,8 @@ DataType LossFunction::Dist(const Vector& x, const Vector& y) const {
 Vector LossFunction::Grad(const Vector& x, const Vector& y) const {
     assert(x.rows() == y.rows() &&
            "The distance between vectors of different dimensions cannot be considered");
-    assert(x.allFinite() && "Not finite matrix");
-    assert(y.allFinite() && "Not finite matrix");
+    assert(x.allFinite() && "Not finite data");
+    assert(y.allFinite() && "Not finite data");
 
     return grad_(x, y);
 }
@@ -41,8 +41,8 @@ DataType LossFunction::Dist(const Matrix& x, const Matrix& y) const {
            "The distance between vectors of different dimensions cannot be considered");
     assert(x.cols() == y.cols() && "The number of vectors differs");
 
-    assert(x.allFinite() && "Not finite matrix");
-    assert(y.allFinite() && "Not finite matrix");
+    assert(x.allFinite() && "Not finite data");
+    assert(y.allFinite() && "Not finite data");
 
     DataType distance = 0.0;
     Index size = x.cols();
@@ -59,8 +59,8 @@ Matrix LossFunction::Grad(const Matrix& x, const Matrix& y) const {
            "The distance between vectors of different dimensions cannot be considered");
     assert(x.cols() == y.cols() && "The number of vectors differs");
 
-    assert(x.allFinite() && "Not finite matrix");
-    assert(y.allFinite() && "Not finite matrix");
+    assert(x.allFinite() && "Not finite data");
+    assert(y.allFinite() && "Not finite data");
 
     Matrix matrix_u(x.cols(), x.rows());
     Index size = x.cols();
@@ -68,8 +68,8 @@ Matrix LossFunction::Grad(const Matrix& x, const Matrix& y) const {
         Vector x_i = x.col(col_i);
         Vector y_i = y.col(col_i);
 
-        assert(x_i.allFinite() && "Not finite matrix");
-        assert(y_i.allFinite() && "Not finite matrix");
+        assert(x_i.allFinite() && "Not finite data");
+        assert(y_i.allFinite() && "Not finite data");
         matrix_u.row(col_i) = Grad(x_i, y_i);
     }
     return matrix_u;
@@ -100,7 +100,7 @@ Vector CrossEntropy::Grad(const Vector& x, const Vector& y) {
     const double epsilon = 1e-7;
     //        const double epsilon = 0;
     Vector result = -(y.array() / (x.array() + epsilon));
-    assert(result.allFinite() && "Not finite vector");
+    assert(result.allFinite() && "Not finite data");
     return result;
 }
 

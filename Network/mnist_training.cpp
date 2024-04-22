@@ -1,4 +1,4 @@
-#include "application.h"
+#include "mnist_training.h"
 
 namespace project {
 
@@ -34,12 +34,12 @@ DataSet MnistTesting::GetMnistData(Index train_size) {
 
 int MnistTesting::Training(Path path) {
 
-    DataSet dataset(GetMnistData(1000));
+    DataSet dataset(GetMnistData());
 
-    Net net({dataset.num_input_pixels, 20, dataset.num_output_pixels},
+    Net net({dataset.num_input_pixels, 64, dataset.num_output_pixels},
             {AFName::ReLU, AFName::Softmax}, path);
 
-    Net::Info info = net.Train(dataset.train, dataset.test, LFName::CrossEntropy, 0.001, 100, 0.01,
+    Net::Info info = net.Train(dataset.train, dataset.test, LFName::CrossEntropy, 0.001, 0, 0.01,
                                0.01, 128, true);
     std::cout << "RESULT:\n"
               << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
@@ -50,7 +50,7 @@ int MnistTesting::Training(Path path) {
 DataType MnistTesting::CalcAccuracy(Path path) {
     DataSet dataset(GetMnistData());
 
-    Net net({dataset.num_input_pixels, 256, dataset.num_output_pixels},
+    Net net({dataset.num_input_pixels, 64, dataset.num_output_pixels},
             {AFName::ReLU, AFName::Softmax}, path);
 
     auto test_outputs = net.Calc(dataset.test.input_vectors);
@@ -73,7 +73,7 @@ DataType MnistTesting::CalcAccuracy(Path path) {
 int MnistTesting::Run() {
     Path path = "../../params.bin";
     //    Path path = "";
-    MnistTesting::Training(path);
+    //    MnistTesting::Training(path);
     DataType accuracy = CalcAccuracy(path);
     std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
 

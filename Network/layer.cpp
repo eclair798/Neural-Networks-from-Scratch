@@ -13,7 +13,7 @@ RandGen& GetRng() {
 Matrix GenerateRandomNormalMatrix(Index rows, Index cols, DataType norm = 1.0 / 12.0) {
     assert(norm != 0 && "Zero norm");
     Matrix result = Eigen::Rand::normal<Matrix>(rows, cols, GetRng()) * norm;
-    assert(result.allFinite() && "Not finite matrix");
+    assert(result.allFinite() && "Not finite data");
     return result;
 }
 }  // namespace
@@ -26,18 +26,19 @@ Layer::Layer(Index input_size, Index output_size, ActivationFunction func)
 Vector Layer::Calc(const Vector& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
     Vector lin_output = matrix_a_ * input + vector_b_;
+    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
     return sigma_.Calc(lin_output);
 }
 Matrix Layer::Calc(const Matrix& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
-    assert(input.allFinite() && "Not finite matrix");
-    assert(matrix_a_.allFinite() && "Not finite matrix");
-    assert(vector_b_.allFinite() && "Not finite matrix");
+    assert(input.allFinite() && "Not finite data");
+    assert(matrix_a_.allFinite() && "Not finite data");
+    assert(vector_b_.allFinite() && "Not finite data");
     Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
-    assert(lin_output.allFinite() && "Not finite matrix");
+    assert(lin_output.allFinite() && "Not finite data");
     Matrix result = sigma_.CalcMatrix(lin_output);
-    assert(result.allFinite() && "Not finite matrix");
+    assert(result.allFinite() && "Not finite data");
 
     return result;
 }
@@ -45,8 +46,8 @@ Matrix Layer::Calc(const Matrix& input) const {
 RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
-    assert(u.allFinite() && "Not finite matrix");
-    assert(input.allFinite() && "Not finite vector");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Vector lin_output = matrix_a_ * input + vector_b_;
     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
@@ -59,8 +60,8 @@ Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
     assert(u.rows() == input.cols() && "Incorrect count of vectors");
 
-    assert(u.allFinite() && "Not finite matrix");
-    assert(input.allFinite() && "Not finite matrix");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Matrix result(u.rows(), input.rows());
     for (Index i = 0; i < result.rows(); ++i) {
@@ -75,8 +76,8 @@ Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
 
-    assert(u.allFinite() && "Not finite vector");
-    assert(input.allFinite() && "Not finite vector");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Vector lin_output = matrix_a_ * input + vector_b_;
     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
@@ -90,8 +91,8 @@ Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
     assert(u.rows() == input.cols() && "Incorrect count of vectors");
 
-    assert(u.allFinite() && "Not finite matrix");
-    assert(input.allFinite() && "Not finite matrix");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Matrix result(matrix_a_.rows(), matrix_a_.cols());
     for (Index i = 0; i < u.rows(); ++i) {
@@ -107,8 +108,8 @@ Vector Layer::GetBCorrection(const RowVector& u, const Vector& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
 
-    assert(u.allFinite() && "Not finite vector");
-    assert(input.allFinite() && "Not finite vector");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Vector lin_output = matrix_a_ * input + vector_b_;
     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
@@ -120,8 +121,8 @@ Matrix Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
     assert(u.rows() == input.cols() && "Incorrect count of vectors");
 
-    assert(u.allFinite() && "Not finite matrix");
-    assert(input.allFinite() && "Not finite matrix");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
     Vector result(vector_b_.rows());
     for (Index i = 0; i < u.rows(); ++i) {
@@ -138,8 +139,8 @@ void Layer::SetParam(Matrix&& matrix_a, Vector&& vector_b) {
            "Incorrect matrix size");
     assert(vector_b.rows() == output_size_ && "Incorrect vector size");
 
-    assert(matrix_a.allFinite() && "Not finite matrix");
-    assert(vector_b.allFinite() && "Not finite vector");
+    assert(matrix_a.allFinite() && "Not finite data");
+    assert(vector_b.allFinite() && "Not finite data");
 
     matrix_a_ = std::move(matrix_a);
     vector_b_ = std::move(vector_b);
