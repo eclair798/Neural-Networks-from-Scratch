@@ -7,7 +7,7 @@ ParametersHandler::ParametersHandler(Path input_path, Path output_path)
     can_read_ = !input_path.empty();
     can_write_ = !output_path.empty();
     if (can_read_) {
-        input_file_.open(input_path, std::ios::binary);
+        input_file_ = std::ifstream(input_path, std::ios::binary);
         assert(input_file_ && "Problem with input file");
         input_file_.read(reinterpret_cast<char*>(&params_count_), sizeof(params_count_));
         been_read_ = (params_count_ == 0);
@@ -52,10 +52,11 @@ Parameter ParametersHandler::ReadParam() {
 }
 
 void ParametersHandler::WriteHead(Counter count) {
+    assert(been_read_ && "Can not write before read");
     assert(can_write_ && "Can not write parameters into files");
     params_count_ = count;
     processed_params_count_ = 0;
-    output_file_.open(output_path_, std::ios::binary);
+    output_file_ = std::ofstream(output_path_, std::ios::binary);
     assert(output_file_ && "Problem with output file");
     output_file_.write(reinterpret_cast<char*>(&count), sizeof(count));
 }
@@ -74,6 +75,9 @@ void ParametersHandler::WriteParam(Matrix matrix_a, Vector vector_b) {
     output_file_.write(reinterpret_cast<const char*>(vector_b.data()), size * sizeof(DataType));
 
     ++processed_params_count_;
+    if (processed_params_count_ == params_count_) {
+        output_file_.close();
+    }
 }
 ParametersHandler::~ParametersHandler() {
     if (input_file_.is_open()) {

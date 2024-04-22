@@ -31,12 +31,19 @@ DataType LossFunction::Dist(const Vector& x, const Vector& y) const {
 Vector LossFunction::Grad(const Vector& x, const Vector& y) const {
     assert(x.rows() == y.rows() &&
            "The distance between vectors of different dimensions cannot be considered");
+    assert(x.allFinite() && "Not finite matrix");
+    assert(y.allFinite() && "Not finite matrix");
+
     return grad_(x, y);
 }
 DataType LossFunction::Dist(const Matrix& x, const Matrix& y) const {
     assert(x.rows() == y.rows() &&
            "The distance between vectors of different dimensions cannot be considered");
     assert(x.cols() == y.cols() && "The number of vectors differs");
+
+    assert(x.allFinite() && "Not finite matrix");
+    assert(y.allFinite() && "Not finite matrix");
+
     DataType distance = 0.0;
     Index size = x.cols();
     for (Index col_i = 0; col_i < size; ++col_i) {
@@ -51,11 +58,18 @@ Matrix LossFunction::Grad(const Matrix& x, const Matrix& y) const {
     assert(x.rows() == y.rows() &&
            "The distance between vectors of different dimensions cannot be considered");
     assert(x.cols() == y.cols() && "The number of vectors differs");
+
+    assert(x.allFinite() && "Not finite matrix");
+    assert(y.allFinite() && "Not finite matrix");
+
     Matrix matrix_u(x.cols(), x.rows());
     Index size = x.cols();
     for (Index col_i = 0; col_i < size; ++col_i) {
         Vector x_i = x.col(col_i);
         Vector y_i = y.col(col_i);
+
+        assert(x_i.allFinite() && "Not finite matrix");
+        assert(y_i.allFinite() && "Not finite matrix");
         matrix_u.row(col_i) = Grad(x_i, y_i);
     }
     return matrix_u;
@@ -79,10 +93,15 @@ Vector Manhattan::Grad(const Vector& x, const Vector& y) {
 }
 
 DataType CrossEntropy::Dist(const Vector& x, const Vector& y) {
-    return -(y.array() * x.array().log()).sum();
+    DataType result = -(y.array() * x.array().log()).sum();
+    return result;
 }
 Vector CrossEntropy::Grad(const Vector& x, const Vector& y) {
-    return -(y.array() / x.array());
+    const double epsilon = 1e-7;
+    //        const double epsilon = 0;
+    Vector result = -(y.array() / (x.array() + epsilon));
+    assert(result.allFinite() && "Not finite vector");
+    return result;
 }
 
 }  // namespace loss_func_options

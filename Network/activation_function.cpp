@@ -41,6 +41,7 @@ Matrix ActivationFunction::CalcMatrix(const Matrix& matrix) const {
     Matrix result(matrix.rows(), matrix.cols());
     for (int col = 0; col < matrix.cols(); ++col) {
         result.col(col) = Calc(matrix.col(col));
+        assert(result.col(col).allFinite() && "Not finite matrix");
     }
     return result;
 }
@@ -82,10 +83,15 @@ DataType ReLU::DerivativeDim1(DataType x) {
     return (x > 0) ? 1.0 : 0.0;
 }
 Vector ReLU::Calc(const Vector& vector) {
-    return vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+    assert(vector.allFinite() && "Not finite vector");
+    Vector result = vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+    assert(result.allFinite() && "Not finite vector");
+    return result;
 }
 Matrix ReLU::Derivative(const Vector& vector) {
+    assert(vector.allFinite() && "Not finite vector");
     Vector result = vector.unaryExpr([](DataType x) { return ReLU::DerivativeDim1(x); });
+    assert(result.allFinite() && "Not finite vector");
     return result.asDiagonal();
 }
 
@@ -104,22 +110,21 @@ Matrix Linear::Derivative(const Vector& vector) {
 }
 
 Vector Softmax::Calc(const Vector& vector) {
-    Vector exp_x = vector.array().exp();
+    assert(vector.allFinite() && "Not finite vector");
+    //    Vector exp_x = (vector.array()).exp();
+    Vector exp_x = (vector.array() - vector.maxCoeff()).exp();
+    assert(exp_x.allFinite() && "Not finite vector");
     DataType sum_exp_x = exp_x.sum();
+    assert(sum_exp_x != 0 && "Zero division");
     return exp_x / sum_exp_x;
 }
 Matrix Softmax::Derivative(const Vector& vector) {
+    assert(vector.allFinite() && "Not finite vector");
     Vector softmax_x = Calc(vector);
-    Matrix jacobian = Matrix::Zero(vector.size(), vector.size());
-    for (int i = 0; i < vector.size(); ++i) {
-        for (int j = 0; j < vector.size(); ++j) {
-            if (i == j) {
-                jacobian(i, j) = softmax_x(i) * (1 - softmax_x(i));
-            } else {
-                jacobian(i, j) = -softmax_x(i) * softmax_x(j);
-            }
-        }
-    }
+    assert(softmax_x.allFinite() && "Not finite vector");
+
+    Matrix jacobian = softmax_x.asDiagonal();
+    jacobian -= softmax_x * softmax_x.transpose();
     return jacobian;
 }
 

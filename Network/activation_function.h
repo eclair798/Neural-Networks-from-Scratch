@@ -11,9 +11,6 @@ public:
     ActivationFunction() = default;
     ActivationFunction(FuncAct calc, FuncDerivativeAct der_calc);
     static ActivationFunction Make(AFName name);
-
-    //    DataType Calc(DataType x) const;
-    //    DataType Derivative(DataType x) const;
     Vector Calc(const Vector& vector) const;
     Matrix Derivative(const Vector& vector) const;
     Matrix CalcMatrix(const Matrix& matrix) const;

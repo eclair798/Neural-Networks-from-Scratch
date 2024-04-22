@@ -4,7 +4,7 @@
 
 int main(/*int argc, char* argv[]*/) {
     try {
-        return project::Application::Run();
+        return project::MnistTesting::Run();
     } catch (const std::exception& exception) {
         std::cerr << exception.what() << std::endl;
         return -1;

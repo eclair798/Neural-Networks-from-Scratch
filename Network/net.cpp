@@ -43,6 +43,8 @@ Net::Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path, Path outp
                              ActivationFunction::Make(act_funcs[i]));
         if (params_handler_.CanRead()) {
             Parameter param = params_handler_.ReadParam();
+            assert(param.matrix_a.allFinite() && "Not finite matrix");
+            assert(param.vector_b.allFinite() && "Not finite vector");
             layers_.back().SetParam(std::move(param.matrix_a), std::move(param.vector_b));
         } else {
             layers_.back().SetRandParam();
@@ -65,7 +67,10 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     DataType learning_rate;
 
     Matrix res = Calc(train_data.input_vectors);
+    assert(res.allFinite() && "Not finite matrix");
+
     DataType error_rate = dist_func_.Dist(res, train_data.output_vectors);
+    assert(res.allFinite() && "Not finite matrix");
 
     auto start = std::chrono::high_resolution_clock::now();
     Counter iterations_count = 0;
@@ -95,10 +100,12 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);
 
         if (print_info) {
+
             Matrix my_test_output = Calc(test_data.input_vectors);
 
             std::cout << my_test_output(7, 0) << "\n\n";
 
+            assert(my_test_output.allFinite() && "Not finite matrix");
             error_rate = dist_func_.Dist(my_test_output, test_data.output_vectors);
 
             std::cout << "iteration: " << iterations_count << ";\t error rate: " << error_rate
@@ -130,7 +137,9 @@ Matrix Net::Calc(const Matrix& x) const {
            "Incorrect dimension of the input vectors");
     Matrix cur_x = x;
     for (const Layer& layer : layers_) {
+        assert(cur_x.allFinite() && "Not finite matrix");
         cur_x = layer.Calc(cur_x);
+        assert(cur_x.allFinite() && "Not finite matrix");
     }
     return cur_x;
 }
@@ -142,17 +151,26 @@ Net::Deltas Net::GetCorrections(const Data& data) const {
     assert(data.input_vectors.cols() == data.output_vectors.cols() &&
            "The number of input and output vectors differs");
 
+    assert(data.input_vectors.allFinite() && "Not finite matrix");
+    assert(data.output_vectors.allFinite() && "Not finite matrix");
+
     Counter calc_sizes = layers_.size() + 1;
     Calculations calcs(calc_sizes);
     calcs.front() = data.input_vectors;
     for (Counter i = 1; i < calc_sizes; ++i) {
         calcs[i] = layers_[i - 1].Calc(calcs[i - 1]);
     }
+
+    assert(calcs[calc_sizes - 1].allFinite() && "Not finite matrix");
     Matrix ui = dist_func_.Grad(calcs[calc_sizes - 1], data.output_vectors);
+    assert(ui.allFinite() && "Not finite matrix");
+
     Deltas deltas(layers_.size());
     for (Counter i = layers_.size() - 1; i >= 0; --i) {
         Matrix delta_a = layers_[i].GetACorrection(ui, calcs[i]);
+        assert(delta_a.allFinite() && "Not finite matrix");
         Vector delta_b = layers_[i].GetBCorrection(ui, calcs[i]);
+        assert(delta_b.allFinite() && "Not finite matrix");
         deltas[i] = {delta_a, delta_b};
         ui = layers_[i].PushU(ui, calcs[i]);
     }

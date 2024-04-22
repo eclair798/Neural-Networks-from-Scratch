@@ -2,15 +2,16 @@
 
 namespace project {
 
-int Application::Run() {
+DataSet MnistTesting::GetMnistData(Index train_size) {
     auto dataset = mnist::read_dataset<std::vector, std::vector, uint8_t, uint8_t>("../../mnist");
 
-    int num_train_images = 100;
-    //    int num_train_images = dataset.training_images.size();
-    int num_test_images = dataset.test_images.size();
+    Index num_train_images = train_size == 0 || train_size > dataset.training_images.size()
+                                 ? dataset.training_images.size()
+                                 : train_size;
+    Index num_test_images = dataset.test_images.size();
 
-    int num_input_pixels = dataset.training_images[0].size();
-    int num_output_pixels = 10;
+    Index num_input_pixels = dataset.training_images[0].size();
+    Index num_output_pixels = 10;
 
     Data train({num_input_pixels, num_train_images}, {num_output_pixels, num_train_images});
     Data test({num_input_pixels, num_test_images}, {num_output_pixels, num_test_images});
@@ -28,12 +29,55 @@ int Application::Run() {
         test.output_vectors(static_cast<Counter>(dataset.test_labels[i]), i) = 1.0;
     }
 
-    Net net({num_input_pixels, 20, num_output_pixels}, {AFName::ReLU, AFName::Softmax}, "",
-            "/home/xubuntu/Study/Neural-Networks-from-Scratch/res.bin");
-    Net::Info info = net.Train(train, test, LFName::CrossEntropy, 0.001, 5, 0.01, 0.1, 64);
-    std::cout << "FINAL RESULT:\n"
+    return {num_input_pixels, num_output_pixels, num_train_images, num_test_images, train, test};
+}
+
+int MnistTesting::Training(Path path) {
+
+    DataSet dataset(GetMnistData(1000));
+
+    Net net({dataset.num_input_pixels, 20, dataset.num_output_pixels},
+            {AFName::ReLU, AFName::Softmax}, path);
+
+    Net::Info info = net.Train(dataset.train, dataset.test, LFName::CrossEntropy, 0.001, 100, 0.01,
+                               0.01, 128, true);
+    std::cout << "RESULT:\n"
               << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
               << "\n";
     return 0;
 }
+
+DataType MnistTesting::CalcAccuracy(Path path) {
+    DataSet dataset(GetMnistData());
+
+    Net net({dataset.num_input_pixels, 256, dataset.num_output_pixels},
+            {AFName::ReLU, AFName::Softmax}, path);
+
+    auto test_outputs = net.Calc(dataset.test.input_vectors);
+    auto& expected_outputs = dataset.test.output_vectors;
+    DataType hits_count = 0;
+    for (Counter i = 0; i < dataset.num_test_images; ++i) {
+        Index ans_index;
+        test_outputs.col(i).maxCoeff(&ans_index);
+        Index correct_index;
+        expected_outputs.col(i).maxCoeff(&correct_index);
+        if (ans_index == correct_index) {
+            hits_count += 1.0;
+        }
+        //        std::cout << "cur hits count: " << hits_count << " from " <<
+        //        dataset.num_test_images << "\n";
+    }
+    return hits_count / dataset.num_test_images;
+}
+
+int MnistTesting::Run() {
+    Path path = "../../params.bin";
+    //    Path path = "";
+    MnistTesting::Training(path);
+    DataType accuracy = CalcAccuracy(path);
+    std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
+
+    return 0;
+}
+
 }  // namespace project
