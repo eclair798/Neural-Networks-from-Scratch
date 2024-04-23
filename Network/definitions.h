@@ -26,6 +26,7 @@ using Counter = int;
 
 using FuncAct = std::function<Vector(Vector)>;
 using FuncDerivativeAct = std::function<Matrix(Vector)>;
+using FuncDerivativeDim1Act = std::function<DataType(DataType)>;
 
 using FuncDist = std::function<DataType(const Vector&, const Vector&)>;
 using FuncGrad = std::function<RowVector(const Vector&, const Vector&)>;

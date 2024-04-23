@@ -21,8 +21,8 @@ public:
 
     static DataSet GetMnistData(Index train_size = 0);
 
-    static int Training(Path path);
+    static int Train(Net& net, DataSet& dataset, Counter iter_count);
 
-    static DataType CalcAccuracy(Path path);
+    static DataType CalcAccuracy(Net& net, DataSet& dataset);
 };
 }  // namespace project

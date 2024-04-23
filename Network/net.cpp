@@ -6,36 +6,11 @@ namespace project {
 
 namespace {
 
-// Matrix CreatePermutationMatrix(Index size) {
-//     std::random_device rd;
-//     std::mt19937 gen(rd());
-//     std::uniform_int_distribution<Index> dist(0, size - 1);
-//     std::vector<Index> perm_indices(size);
-//     for (Index i = 0; i < size; ++i) {
-//         perm_indices[i] = i;
-//     }
-//     for (Index i = 0; i < size; ++i) {
-//         Index rand_index = dist(gen);
-//         std::swap(perm_indices[i], perm_indices[rand_index]);
-//     }
-//     Matrix perm_matrix = Matrix::Zero(size, size);
-//     for (Index i = 0; i < size; ++i) {
-//         perm_matrix(perm_indices[i], i) = 1;
-//     }
-//     return perm_matrix;
-// }
-
 void ShuffleData(Data& data) {
-    //    Index total_size = data.input_vectors.cols();
-    //    Matrix perm_matrix = CreatePermutationMatrix(total_size);
-    //    data.input_vectors = data.input_vectors * perm_matrix;
-    //    data.output_vectors = data.output_vectors * perm_matrix;
     Index total_size = data.input_vectors.cols();
-
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<Index> dist(0, total_size - 1);
-
     for (Index i = 0; i < total_size; ++i) {
         Index rand_index = dist(gen);
         data.input_vectors.col(i).swap(data.input_vectors.col(rand_index));
@@ -46,9 +21,7 @@ void ShuffleData(Data& data) {
 Batches DivideIntoBatches(Data data, Index batch_size) {
     assert(data.input_vectors.cols() == data.output_vectors.cols() &&
            "The number of input and output vectors differs");
-
     ShuffleData(data);
-
     Index total_size = data.input_vectors.cols();
     batch_size = std::min(total_size, batch_size);
     Index count = total_size / batch_size;
@@ -163,14 +136,14 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     return {error_rate, iterations_count};
 }
 
-Vector Net::Calc(const Vector& x) const {
-    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vector");
-    Vector cur_x = x;
-    for (const Layer& layer : layers_) {
-        cur_x = layer.Calc(cur_x);
-    }
-    return cur_x;
-}
+//Vector Net::Calc(const Vector& x) const {
+//    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vector");
+//    Vector cur_x = x;
+//    for (const Layer& layer : layers_) {
+//        cur_x = layer.Calc(cur_x);
+//    }
+//    return cur_x;
+//}
 Matrix Net::Calc(const Matrix& x) const {
     assert(x.rows() == layers_.front().GetInputSize() &&
            "Incorrect dimension of the input vectors");

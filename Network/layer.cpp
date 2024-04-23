@@ -37,24 +37,25 @@ Matrix Layer::Calc(const Matrix& input) const {
     Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
     assert(lin_output.allFinite() && "Not finite data");
-    Matrix result = sigma_.CalcMatrix(lin_output);
+    Matrix result = sigma_.CalcBatch(lin_output);
     assert(result.allFinite() && "Not finite data");
 
     return result;
 }
 
-RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
-    assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
-    assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
-    assert(u.allFinite() && "Not finite data");
-    assert(input.allFinite() && "Not finite data");
+ RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
+     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
+     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
+     assert(u.allFinite() && "Not finite data");
+     assert(input.allFinite() && "Not finite data");
 
-    Vector lin_output = matrix_a_ * input + vector_b_;
-    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+     Vector lin_output = matrix_a_ * input + vector_b_;
+     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
 
-    RowVector res = u * sigma_.Derivative(lin_output) * matrix_a_;
-    return res;
-}
+     RowVector result = u * sigma_.Derivative(lin_output) * matrix_a_;
+     return result;
+ }
+
 Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
@@ -72,20 +73,21 @@ Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     return result;
 }
 
-Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
-    assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
-    assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
+ Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
+     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
+     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
 
-    assert(u.allFinite() && "Not finite data");
-    assert(input.allFinite() && "Not finite data");
+     assert(u.allFinite() && "Not finite data");
+     assert(input.allFinite() && "Not finite data");
 
-    Vector lin_output = matrix_a_ * input + vector_b_;
-    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+     Vector lin_output = matrix_a_ * input + vector_b_;
+     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
 
-    Matrix der = sigma_.Derivative(lin_output);
-    Matrix res = der * u.transpose() * input.transpose();
-    return res;
-}
+     Matrix der = sigma_.Derivative(lin_output);
+     Matrix result = der * u.transpose() * input.transpose();
+     return result;
+ }
+
 Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
@@ -95,6 +97,14 @@ Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
     assert(input.allFinite() && "Not finite data");
 
     Matrix result(matrix_a_.rows(), matrix_a_.cols());
+
+    if (sigma_.IsDiagonalDerivative()) {
+        Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
+        lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+        Matrix der_batch = sigma_.DerivativeBatch(lin_output);
+        return der_batch.transpose().array() * (u.transpose() * input.transpose()).array();
+    }
+
     for (Index i = 0; i < u.rows(); ++i) {
         RowVector vec_u = u.row(i);
         Vector vec_input = input.col(i);
