@@ -34,8 +34,8 @@ DataSet MnistTesting::GetMnistData(Index train_size) {
 
 int MnistTesting::Train(Net& net, DataSet& dataset, Counter iter_count = 10) {
 
-    Net::Info info = net.Train(dataset.train, dataset.test, LFName::SquaredEuclidean, 0.001, iter_count, 10,
-                               1, 128, true);
+    Net::Info info = net.Train(dataset.train, dataset.test, LFName::CrossEntropy, 0.001, iter_count,
+                               0.15, 0.01, 128, true);
     std::cout << "RESULT:\n"
               << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
               << "\n";
@@ -63,23 +63,18 @@ int MnistTesting::Run() {
     Path path = "../../params.bin";
     Path new_path = "../../sigmoid_params.bin";
 
-    DataSet dataset(GetMnistData(60000));
-    Net net({dataset.num_input_pixels, 64, dataset.num_output_pixels},
+    DataSet dataset(GetMnistData());
+    Net net({dataset.num_input_pixels, 32, dataset.num_output_pixels},
             {AFName::ReLU, AFName::Softmax}, "", new_path);
 
-    MnistTesting::Train(net, dataset, 20);
+    MnistTesting::Train(net, dataset, 50);
     DataType accuracy = CalcAccuracy(net, dataset);
     std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
 
-
-//    Net net_sm({dataset.num_input_pixels, 20, dataset.num_output_pixels},
-//            {AFName::ReLU, AFName::Softmax}, path);
-//    DataType accuracy_sm = CalcAccuracy(net_sm, dataset);
-//    std::cout << "Accuracy of Neural Network with SoftMax: " << accuracy_sm << "\n\n";
-
-
-
-
+    //    Net net_sm({dataset.num_input_pixels, 20, dataset.num_output_pixels},
+    //            {AFName::ReLU, AFName::Softmax}, path);
+    //    DataType accuracy_sm = CalcAccuracy(net_sm, dataset);
+    //    std::cout << "Accuracy of Neural Network with SoftMax: " << accuracy_sm << "\n\n";
 
     return 0;
 }

@@ -43,18 +43,18 @@ Matrix Layer::Calc(const Matrix& input) const {
     return result;
 }
 
- RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
-     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
-     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
-     assert(u.allFinite() && "Not finite data");
-     assert(input.allFinite() && "Not finite data");
+RowVector Layer::PushU(const RowVector& u, const Vector& input) const {
+    assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
+    assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
-     Vector lin_output = matrix_a_ * input + vector_b_;
-     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+    Vector lin_output = matrix_a_ * input + vector_b_;
+    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
 
-     RowVector result = u * sigma_.Derivative(lin_output) * matrix_a_;
-     return result;
- }
+    RowVector result = u * sigma_.Derivative(lin_output) * matrix_a_;
+    return result;
+}
 
 Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
@@ -65,6 +65,14 @@ Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     assert(input.allFinite() && "Not finite data");
 
     Matrix result(u.rows(), input.rows());
+
+    if (sigma_.IsDiagonalDerivative()) {
+        Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
+        lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+        Matrix der_batch = sigma_.DerivativeBatch(lin_output);
+        result = (der_batch.transpose().array() * u.array()).matrix() * matrix_a_;
+        return result;
+    }
     for (Index i = 0; i < result.rows(); ++i) {
         RowVector vec_u = u.row(i);
         Vector vec_input = input.col(i);
@@ -73,20 +81,20 @@ Matrix Layer::PushU(const Matrix& u, const Matrix& input) const {
     return result;
 }
 
- Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
-     assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
-     assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
+Matrix Layer::GetACorrection(const RowVector& u, const Vector& input) const {
+    assert(u.cols() == output_size_ && "Incorrect dimension of the gradient");
+    assert(input.rows() == input_size_ && "Incorrect dimension of the input vector");
 
-     assert(u.allFinite() && "Not finite data");
-     assert(input.allFinite() && "Not finite data");
+    assert(u.allFinite() && "Not finite data");
+    assert(input.allFinite() && "Not finite data");
 
-     Vector lin_output = matrix_a_ * input + vector_b_;
-     lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+    Vector lin_output = matrix_a_ * input + vector_b_;
+    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
 
-     Matrix der = sigma_.Derivative(lin_output);
-     Matrix result = der * u.transpose() * input.transpose();
-     return result;
- }
+    Matrix der = sigma_.Derivative(lin_output);
+    Matrix result = der * u.transpose() * input.transpose();
+    return result;
+}
 
 Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
