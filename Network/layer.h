@@ -18,7 +18,7 @@ public:
     Matrix GetACorrection(const Matrix& u, const Matrix& input) const;
 
     Vector GetBCorrection(const RowVector& u, const Vector& input) const;
-    Matrix GetBCorrection(const Matrix& u, const Matrix& input) const;
+    Vector GetBCorrection(const Matrix& u, const Matrix& input) const;
 
     void SetParam(Matrix&& matrix_a, Vector&& vector_b);
 

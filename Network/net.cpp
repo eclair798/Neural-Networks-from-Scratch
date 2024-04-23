@@ -136,14 +136,6 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     return {error_rate, iterations_count};
 }
 
-//Vector Net::Calc(const Vector& x) const {
-//    assert(x.rows() == layers_.front().GetInputSize() && "Incorrect dimension of the input vector");
-//    Vector cur_x = x;
-//    for (const Layer& layer : layers_) {
-//        cur_x = layer.Calc(cur_x);
-//    }
-//    return cur_x;
-//}
 Matrix Net::Calc(const Matrix& x) const {
     assert(x.rows() == layers_.front().GetInputSize() &&
            "Incorrect dimension of the input vectors");

@@ -102,7 +102,9 @@ Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
         Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
         lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
         Matrix der_batch = sigma_.DerivativeBatch(lin_output);
-        return der_batch.transpose().array() * (u.transpose() * input.transpose()).array();
+        result = der_batch.transpose().array() * (u.transpose() * input.transpose()).array();
+        result /= u.rows();
+        return result;
     }
 
     for (Index i = 0; i < u.rows(); ++i) {
@@ -126,7 +128,7 @@ Vector Layer::GetBCorrection(const RowVector& u, const Vector& input) const {
 
     return sigma_.Derivative(lin_output) * u.transpose();
 }
-Matrix Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
+Vector Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
     assert(u.cols() == output_size_ && "Incorrect dimension of the gradients");
     assert(input.rows() == input_size_ && "Incorrect dimension of the input vectors");
     assert(u.rows() == input.cols() && "Incorrect count of vectors");
@@ -135,6 +137,16 @@ Matrix Layer::GetBCorrection(const Matrix& u, const Matrix& input) const {
     assert(input.allFinite() && "Not finite data");
 
     Vector result(vector_b_.rows());
+
+    if (sigma_.IsDiagonalDerivative()) {
+        Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
+        lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
+        Matrix der_batch = sigma_.DerivativeBatch(lin_output);
+        result = (der_batch.array() * u.transpose().array()).rowwise().sum();
+        result /= u.rows();
+        return result;
+    }
+
     for (Index i = 0; i < u.rows(); ++i) {
         RowVector vec_u = u.row(i);
         Vector vec_input = input.col(i);
