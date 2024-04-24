@@ -130,7 +130,6 @@ Matrix Linear::Derivative(const Vector& vector) {
 
 Vector Softmax::Calc(const Vector& vector) {
     assert(vector.allFinite() && "Not finite data");
-    //    Vector exp_x = (vector.array()).exp();
     Vector exp_x = (vector.array() - vector.maxCoeff()).exp();
     assert(exp_x.allFinite() && "Not finite data");
     DataType sum_exp_x = exp_x.sum();

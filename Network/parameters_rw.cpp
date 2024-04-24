@@ -1,31 +1,16 @@
-#include "parameters_handler.h"
+#include "parameters_rw.h"
 
 namespace project {
 
-ParametersHandler::ParametersHandler(Path input_path, Path output_path)
-    : output_path_(output_path) {
-    can_read_ = !input_path.empty();
-    can_write_ = !output_path.empty();
-    if (can_read_) {
-        input_file_ = std::ifstream(input_path, std::ios::binary);
-        assert(input_file_ && "Problem with input file");
-        input_file_.read(reinterpret_cast<char*>(&params_count_), sizeof(params_count_));
-        been_read_ = (params_count_ == 0);
-    }
-    processed_params_count_ = 0;
+ParameterReader::ParameterReader(Path input_path) {
+    input_file_ = std::ifstream(input_path, std::ios::binary);
+    assert(input_file_ && "Problem with input file");
+    input_file_.read(reinterpret_cast<char*>(&params_count_), sizeof(params_count_));
 }
-
-bool ParametersHandler::CanRead() {
-    return can_read_;
-}
-bool ParametersHandler::CanWrite() {
-    return can_write_;
-}
-Counter ParametersHandler::GetParamsCount() {
+Counter ParameterReader::GetParamsCount() {
     return params_count_;
 }
-
-Parameter ParametersHandler::ReadParam() {
+Parameter ParameterReader::ReadParam() {
     assert(processed_params_count_ != params_count_ && "Trying to read empty file");
     Parameter param;
 
@@ -45,23 +30,26 @@ Parameter ParametersHandler::ReadParam() {
 
     ++processed_params_count_;
     if (processed_params_count_ == params_count_) {
-        been_read_ = true;
         input_file_.close();
     }
     return param;
 }
-
-void ParametersHandler::WriteHead(Counter count) {
-    assert(been_read_ && "Can not write before read");
-    assert(can_write_ && "Can not write parameters into files");
-    params_count_ = count;
-    processed_params_count_ = 0;
-    output_file_ = std::ofstream(output_path_, std::ios::binary);
-    assert(output_file_ && "Problem with output file");
-    output_file_.write(reinterpret_cast<char*>(&count), sizeof(count));
+ParameterReader::~ParameterReader() {
+    if (input_file_.is_open()) {
+        input_file_.close();
+    }
 }
-void ParametersHandler::WriteParam(Matrix matrix_a, Vector vector_b) {
-    assert(can_write_ && "Can not write parameters into files");
+
+ParameterWriter::ParameterWriter(Path output_path, Counter count) {
+    output_file_ = std::ofstream(output_path, std::ios::binary);
+    assert(output_file_ && "Problem with output file");
+    params_count_ = count;
+    output_file_.write(reinterpret_cast<const char*>(&params_count_), sizeof(params_count_));
+}
+Counter ParameterWriter::GetParamsCount() {
+    return params_count_;
+}
+void ParameterWriter::WriteParam(const Matrix& matrix_a, const Vector& vector_b) {
     assert(processed_params_count_ != params_count_ && "Trying to write into full file");
     Index rows = matrix_a.rows();
     Index cols = matrix_a.cols();
@@ -79,10 +67,7 @@ void ParametersHandler::WriteParam(Matrix matrix_a, Vector vector_b) {
         output_file_.close();
     }
 }
-ParametersHandler::~ParametersHandler() {
-    if (input_file_.is_open()) {
-        input_file_.close();
-    }
+ParameterWriter::~ParameterWriter() {
     if (output_file_.is_open()) {
         output_file_.close();
     }

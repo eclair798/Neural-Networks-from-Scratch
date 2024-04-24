@@ -181,10 +181,10 @@ void Layer::SetRandParam() {
     vector_b_ = GenerateRandomNormalMatrix(output_size_, 1);
 }
 
-Matrix Layer::GetA() {
+const Matrix& Layer::GetA() const {
     return matrix_a_;
 }
-Vector Layer::GetB() {
+const Vector& Layer::GetB() const {
     return vector_b_;
 }
 

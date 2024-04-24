@@ -24,8 +24,8 @@ public:
 
     void SetRandParam();
 
-    Matrix GetA();
-    Vector GetB();
+    const Matrix& GetA() const;
+    const Vector& GetB() const;
 
     void CorrectA(const Matrix& delta, DataType learning_rate);
     void CorrectB(const Vector& delta, DataType learning_rate);

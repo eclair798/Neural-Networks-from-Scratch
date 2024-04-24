@@ -44,19 +44,27 @@ Batches DivideIntoBatches(Data data, Index batch_size) {
 
 }  // namespace
 
-Net::Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path, Path output_path)
-    : params_handler_(input_path, output_path) {
+Net::Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path) {
     assert(!layer_sizes.empty() && "There cannot be zero layers");
     assert(layer_sizes.size() == act_funcs.size() + 1 &&
            "The number of layers does not correspond to the number of activation functions");
-    assert(!params_handler_.CanRead() ||
-           (layer_sizes.size() - 1 == params_handler_.GetParamsCount()) &&
+
+    if (!input_path.empty()) {
+        reader_ = std::unique_ptr<ParameterReader>(new ParameterReader(input_path));
+    }
+    assert(reader_ == nullptr ||
+           (layer_sizes.size() - 1 == reader_->GetParamsCount()) &&
                "The number of layers does not correspond to the number of parameters in file");
+
     for (Counter i = 0; i < layer_sizes.size() - 1; ++i) {
         layers_.emplace_back(layer_sizes[i], layer_sizes[i + 1],
                              ActivationFunction::Make(act_funcs[i]));
-        if (params_handler_.CanRead()) {
-            Parameter param = params_handler_.ReadParam();
+        if (reader_ != nullptr) {
+            Parameter param = reader_->ReadParam();
+            assert(param.matrix_a.cols() == layer_sizes[i] &&
+                   param.matrix_a.rows() == layer_sizes[i + 1] &&
+                   param.vector_b.rows() == layer_sizes[i + 1] &&
+                   "The size of layers does not correspond to the size of parameters in file");
             assert(param.matrix_a.allFinite() && "Not finite data");
             assert(param.vector_b.allFinite() && "Not finite data");
             layers_.back().SetParam(std::move(param.matrix_a), std::move(param.vector_b));
@@ -67,7 +75,7 @@ Net::Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path, Path outp
 }
 Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
                      DataType eps, Counter max_iter, DataType initial_learning_rate, DataType decay,
-                     Index batch_size, bool print_info) {
+                     Index batch_size, bool print_info, Path output_path) {
     assert(train_data.input_vectors.rows() == layers_.front().GetInputSize() &&
            train_data.output_vectors.rows() == layers_.back().GetOutputSize() &&
            "Mismatch with the size of the specified layers");
@@ -127,10 +135,15 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
             break;
         }
     }
-    if (params_handler_.CanWrite()) {
-        params_handler_.WriteHead(layers_.size());
+
+    if (!output_path.empty()) {
+        writer_ =
+            std::unique_ptr<ParameterWriter>(new ParameterWriter(output_path, layers_.size()));
+    }
+
+    if (writer_ != nullptr) {
         for (Layer& layer : layers_) {
-            params_handler_.WriteParam(std::move(layer.GetA()), std::move(layer.GetB()));
+            writer_->WriteParam(layer.GetA(), layer.GetB());
         }
     }
     return {error_rate, iterations_count};
