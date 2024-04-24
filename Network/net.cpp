@@ -88,9 +88,11 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     Batches batches = DivideIntoBatches(train_data, batch_size);
     DataType learning_rate;
 
-    Matrix res = Calc(train_data.input_vectors);
+    Matrix train_res = Calc(test_data.input_vectors);
+    Matrix res = Calc(test_data.input_vectors);
     assert(res.allFinite() && "Not finite data");
 
+    DataType train_error_rate = dist_func_.Dist(train_res, train_data.output_vectors);
     DataType error_rate = dist_func_.Dist(res, train_data.output_vectors);
     assert(res.allFinite() && "Not finite data");
 
@@ -123,12 +125,17 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
 
         if (print_info) {
 
+            Matrix my_train_output = Calc(train_data.input_vectors);
             Matrix my_test_output = Calc(test_data.input_vectors);
 
+            assert(my_train_output.allFinite() && "Not finite data");
             assert(my_test_output.allFinite() && "Not finite data");
+            train_error_rate = dist_func_.Dist(my_train_output, train_data.output_vectors);
             error_rate = dist_func_.Dist(my_test_output, test_data.output_vectors);
 
-            std::cout << "iteration: " << iterations_count << ";\t error rate: " << error_rate
+            std::cout << "iteration: " << iterations_count
+                      << ";\t train error rate: " << train_error_rate
+                      << ";\t error rate: " << error_rate
                       << ";\t time from start: " << duration.count() << "\n\n";
         }
         if (error_rate < eps) {
@@ -146,6 +153,15 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
             writer_->WriteParam(layer.GetA(), layer.GetB());
         }
     }
+
+    Matrix my_train_output = Calc(train_data.input_vectors);
+    Matrix my_test_output = Calc(test_data.input_vectors);
+
+    assert(my_train_output.allFinite() && "Not finite data");
+    assert(my_test_output.allFinite() && "Not finite data");
+    train_error_rate = dist_func_.Dist(my_train_output, train_data.output_vectors);
+    error_rate = dist_func_.Dist(my_test_output, test_data.output_vectors);
+
     return {error_rate, iterations_count};
 }
 

@@ -10,7 +10,6 @@ ActivationFunction::ActivationFunction(FuncAct calc, FuncDerivativeAct der_calc,
       derivative_(std::move(der_calc)),
       is_diagonal_derivative_(diag_der),
       derivative_dim1_(std::move(der_dim1_calc)) {
-    assert(diag_der || der_dim1_calc == [](DataType x) { return 0; });
 }
 
 ActivationFunction ActivationFunction::Make(AFName name) {

@@ -110,7 +110,9 @@ Matrix Layer::GetACorrection(const Matrix& u, const Matrix& input) const {
         Matrix lin_output = (matrix_a_ * input).colwise() + vector_b_;
         lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
         Matrix der_batch = sigma_.DerivativeBatch(lin_output);
-        result = der_batch.transpose().array() * (u.transpose() * input.transpose()).array();
+        //        result = der_batch.transpose().array() * (u.transpose() *
+        //        input.transpose()).array();
+        result = (der_batch.array() * u.transpose().array()).matrix() * input.transpose();
         result /= u.rows();
         return result;
     }

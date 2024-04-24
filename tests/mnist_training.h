@@ -1,6 +1,6 @@
 #pragma once
 
-#include "net.h"
+#include "../Network/net.h"
 
 #include "../mnist/include/mnist/mnist_reader.hpp"
 
@@ -21,7 +21,8 @@ public:
 
     static DataSet GetMnistData(Index train_size = 0);
 
-    static int Train(Net& net, DataSet& dataset, Counter iter_count, Path path);
+    static int Train(Net& net, DataSet& dataset, Counter iter_count, DataType ilr, DataType decay,
+                     Path path);
 
     static DataType CalcAccuracy(Net& net, DataSet& dataset);
 };

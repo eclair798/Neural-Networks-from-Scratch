@@ -36,7 +36,3 @@ build*
 
 .idea
 .idea*
-
-tests
-
-*.bin

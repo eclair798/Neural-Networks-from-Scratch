@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "mnist_training.h"
+#include "../tests/mnist_training.h"
 
 int main(/*int argc, char* argv[]*/) {
     try {
