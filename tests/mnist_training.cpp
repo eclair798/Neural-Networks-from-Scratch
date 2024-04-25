@@ -35,7 +35,7 @@ DataSet MnistTesting::GetMnistData(Index train_size) {
 int MnistTesting::Train(Net& net, DataSet& dataset, Counter iter_count = 10, DataType ilr = 0.01,
                         DataType decay = 0, Path path = "") {
 
-    Net::Info info = net.Train(dataset.train, dataset.test, LFName::SquaredEuclidean, 0.001,
+    Net::Info info = net.Train(dataset.train, LFName::CrossEntropy, 0.001,
                                iter_count, ilr, decay, 128, true, path);
     std::cout << "RESULT:\n"
               << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
@@ -62,13 +62,14 @@ DataType MnistTesting::CalcAccuracy(Net& net, DataSet& dataset) {
 
 int MnistTesting::Run() {
     Path path = "../../tests/mnist_ReLU_Softmax_32n_95per.bin";
+    Path path2 = "../../tests/params";
 
-    DataSet dataset(GetMnistData());
+    DataSet dataset(GetMnistData(10000));
 
     Net net({dataset.num_input_pixels, 32, dataset.num_output_pixels},
             {AFName::ReLU, AFName::Softmax}, path);
 
-    //    MnistTesting::Train(net, dataset, 0, 0.01, 5, path2);
+        MnistTesting::Train(net, dataset, 10, 0.1, 0.01, path2);
     DataType accuracy = CalcAccuracy(net, dataset);
     std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
 

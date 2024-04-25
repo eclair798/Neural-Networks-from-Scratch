@@ -4,11 +4,6 @@
 
 namespace project {
 
-struct Parameter {
-    Matrix matrix_a;
-    Vector vector_b;
-};
-
 class ParameterReader {
 public:
     ParameterReader(Path input_path);

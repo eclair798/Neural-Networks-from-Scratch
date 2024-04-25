@@ -37,6 +37,12 @@ struct Data {
     Matrix input_vectors;
     Matrix output_vectors;
 };
+
+struct Parameter {
+    Matrix matrix_a;
+    Vector vector_b;
+};
+
 using Batches = std::vector<Data>;
 
 }  // namespace project

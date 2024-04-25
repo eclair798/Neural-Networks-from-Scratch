@@ -73,8 +73,8 @@ Net::Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path) {
         }
     }
 }
-Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName& dist_func,
-                     DataType eps, Counter max_iter, DataType initial_learning_rate, DataType decay,
+Net::Info Net::Train(const Data& train_data, const LFName& dist_func, DataType eps,
+                     Counter max_iter, DataType initial_learning_rate, DataType decay,
                      Index batch_size, bool print_info, Path output_path) {
     assert(train_data.input_vectors.rows() == layers_.front().GetInputSize() &&
            train_data.output_vectors.rows() == layers_.back().GetOutputSize() &&
@@ -88,12 +88,10 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     Batches batches = DivideIntoBatches(train_data, batch_size);
     DataType learning_rate;
 
-    Matrix train_res = Calc(test_data.input_vectors);
-    Matrix res = Calc(test_data.input_vectors);
-    assert(res.allFinite() && "Not finite data");
+    Matrix train_res = Calc(train_data.input_vectors);
+    assert(train_res.allFinite() && "Not finite data");
 
     DataType train_error_rate = dist_func_.Dist(train_res, train_data.output_vectors);
-    DataType error_rate = dist_func_.Dist(res, train_data.output_vectors);
     assert(res.allFinite() && "Not finite data");
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -103,11 +101,11 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
             cur_deltas = GetCorrections(batch);
             for (Counter j = 0; j < layers_.size(); ++j) {
                 if (epoch == 1) {
-                    average_deltas[j].delta_a = (cur_deltas[j].delta_a / batches.size());
-                    average_deltas[j].delta_b = (cur_deltas[j].delta_b / batches.size());
+                    average_deltas[j].matrix_a = (cur_deltas[j].matrix_a / batches.size());
+                    average_deltas[j].vector_b = (cur_deltas[j].vector_b / batches.size());
                 } else {
-                    average_deltas[j].delta_a += (cur_deltas[j].delta_a / batches.size());
-                    average_deltas[j].delta_b += (cur_deltas[j].delta_b / batches.size());
+                    average_deltas[j].matrix_a += (cur_deltas[j].matrix_a / batches.size());
+                    average_deltas[j].vector_b += (cur_deltas[j].vector_b / batches.size());
                 }
             }
         }
@@ -115,8 +113,8 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
         learning_rate = initial_learning_rate / (1 + epoch * decay);
 
         for (Counter j = 0; j < layers_.size(); ++j) {
-            layers_[j].CorrectA(average_deltas[j].delta_a, learning_rate);
-            layers_[j].CorrectB(average_deltas[j].delta_b, learning_rate);
+            layers_[j].CorrectA(average_deltas[j].matrix_a, learning_rate);
+            layers_[j].CorrectB(average_deltas[j].vector_b, learning_rate);
         }
         iterations_count = epoch;
 
@@ -126,19 +124,16 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
         if (print_info) {
 
             Matrix my_train_output = Calc(train_data.input_vectors);
-            Matrix my_test_output = Calc(test_data.input_vectors);
 
             assert(my_train_output.allFinite() && "Not finite data");
             assert(my_test_output.allFinite() && "Not finite data");
             train_error_rate = dist_func_.Dist(my_train_output, train_data.output_vectors);
-            error_rate = dist_func_.Dist(my_test_output, test_data.output_vectors);
 
             std::cout << "iteration: " << iterations_count
                       << ";\t train error rate: " << train_error_rate
-                      << ";\t error rate: " << error_rate
                       << ";\t time from start: " << duration.count() << "\n\n";
         }
-        if (error_rate < eps) {
+        if (train_error_rate < eps) {
             break;
         }
     }
@@ -155,14 +150,12 @@ Net::Info Net::Train(const Data& train_data, const Data& test_data, const LFName
     }
 
     Matrix my_train_output = Calc(train_data.input_vectors);
-    Matrix my_test_output = Calc(test_data.input_vectors);
 
     assert(my_train_output.allFinite() && "Not finite data");
     assert(my_test_output.allFinite() && "Not finite data");
     train_error_rate = dist_func_.Dist(my_train_output, train_data.output_vectors);
-    error_rate = dist_func_.Dist(my_test_output, test_data.output_vectors);
 
-    return {error_rate, iterations_count};
+    return {train_error_rate, iterations_count};
 }
 
 Matrix Net::Calc(const Matrix& x) const {
