@@ -1,14 +1,12 @@
-#include <iostream>
+#include "mnist_training.h"
+#include "except.h"
 
-#include "../tests/mnist_training.h"
-
-int main(/*int argc, char* argv[]*/) {
+int main() {
     try {
-        return project::MnistTesting::Run();
-    } catch (const std::exception& exception) {
-        std::cerr << exception.what() << std::endl;
-        return -1;
-    } catch (...) {
-        return -2;
+        project::MnistTesting::Run();
+    } catch(...) {
+        except::React();
     }
+    return 0;
 }
+

@@ -1,33 +1,31 @@
+#pragma once
+
 #include "definitions.h"
 
 #include <fstream>
 
 namespace project {
 
+using Path = std::string;
+
 class ParameterReader {
 public:
-    ParameterReader(Path input_path);
-    Counter GetParamsCount();
+    ParameterReader(const Path& input_path);
+    Index GetParamsCount();
     Parameter ReadParam();
-    ~ParameterReader();
-
 private:
     std::ifstream input_file_;
-    Counter params_count_;
-    Counter processed_params_count_ = 0;
+    Index params_count_;
 };
 
 class ParameterWriter {
 public:
-    ParameterWriter(Path output_path, Counter count);
-    Counter GetParamsCount();
+    ParameterWriter(const Path& output_path, Index count);
+    Index GetParamsCount();
     void WriteParam(const Matrix& matrix_a, const Vector& vector_b);
-    ~ParameterWriter();
-
 private:
     std::ofstream output_file_;
-    Counter params_count_;
-    Counter processed_params_count_ = 0;
+    Index params_count_;
 };
 
 }  // namespace project

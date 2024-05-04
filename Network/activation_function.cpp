@@ -4,8 +4,8 @@
 
 namespace project {
 
-ActivationFunction::ActivationFunction(FuncAct calc, FuncDerivativeAct der_calc, bool diag_der,
-                                       FuncDerivativeDim1Act der_dim1_calc)
+ActivationFunction::ActivationFunction(Func calc, FuncDerivative der_calc, bool diag_der,
+                                       FuncDerivativeDim1 der_dim1_calc)
     : calc_(std::move(calc)),
       derivative_(std::move(der_calc)),
       is_diagonal_derivative_(diag_der),
@@ -38,26 +38,26 @@ ActivationFunction ActivationFunction::Make(AFName name) {
     }
 }
 
-Vector ActivationFunction::Calc(const Vector& vector) const {
-    Vector result = calc_(vector);
+Vector ActivationFunction::Calc(const Vector& x) const {
+    Vector result = calc_(x);
     return result;
 }
-Matrix ActivationFunction::Derivative(const Vector& vector) const {
-    Matrix result = derivative_(vector);
+Matrix ActivationFunction::Derivative(const Vector& x) const {
+    Matrix result = derivative_(x);
     return result;
 }
-Matrix ActivationFunction::CalcBatch(const Matrix& matrix) const {
-    Matrix result(matrix.rows(), matrix.cols());
-    for (int col = 0; col < matrix.cols(); ++col) {
-        result.col(col) = Calc(matrix.col(col));
+Matrix ActivationFunction::CalcBatch(const Matrix& xs) const {
+    Matrix result(xs.rows(), xs.cols());
+    for (int col = 0; col < xs.cols(); ++col) {
+        result.col(col) = Calc(xs.col(col));
         assert(result.col(col).allFinite() && "Not finite data");
     }
     return result;
 }
 
-Matrix ActivationFunction::DerivativeBatch(const Matrix& matrix) const {
+Matrix ActivationFunction::DerivativeBatch(const Matrix& x) const {
     assert(is_diagonal_derivative_ && "Taking batch derivative from non diagonal function");
-    Matrix result = matrix.unaryExpr(derivative_dim1_);
+    Matrix result = x.unaryExpr(derivative_dim1_);
     return result;
 }
 bool ActivationFunction::IsDiagonalDerivative() const {
@@ -72,11 +72,11 @@ DataType Sigmoid::CalcDim1(DataType x) {
 DataType Sigmoid::DerivativeDim1(DataType x) {
     return 1.0 / (exp(x) + exp(-x) + 2.0);
 }
-Vector Sigmoid::Calc(const Vector& vector) {
-    return vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+Vector Sigmoid::Calc(const Vector& x) {
+    return x.unaryExpr([](DataType x) { return CalcDim1(x); });
 }
-Matrix Sigmoid::Derivative(const Vector& vector) {
-    Vector result = vector.unaryExpr([](DataType x) { return Sigmoid::DerivativeDim1(x); });
+Matrix Sigmoid::Derivative(const Vector& x) {
+    Vector result = x.unaryExpr([](DataType x) { return Sigmoid::DerivativeDim1(x); });
     return result.asDiagonal();
 }
 
@@ -86,11 +86,11 @@ DataType Tanh::CalcDim1(DataType x) {
 DataType Tanh::DerivativeDim1(DataType x) {
     return 1.0 / (cosh(x) * cosh(x));
 }
-Vector Tanh::Calc(const Vector& vector) {
-    return vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+Vector Tanh::Calc(const Vector& x) {
+    return x.unaryExpr([](DataType x) { return CalcDim1(x); });
 }
-Matrix Tanh::Derivative(const Vector& vector) {
-    Vector result = vector.unaryExpr([](DataType x) { return Tanh::DerivativeDim1(x); });
+Matrix Tanh::Derivative(const Vector& x) {
+    Vector result = x.unaryExpr([](DataType x) { return Tanh::DerivativeDim1(x); });
     return result.asDiagonal();
 }
 
@@ -100,15 +100,15 @@ DataType ReLU::CalcDim1(DataType x) {
 DataType ReLU::DerivativeDim1(DataType x) {
     return (x > 0) ? 1.0 : 0.0;
 }
-Vector ReLU::Calc(const Vector& vector) {
-    assert(vector.allFinite() && "Not finite data");
-    Vector result = vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+Vector ReLU::Calc(const Vector& x) {
+    assert(x.allFinite() && "Not finite data");
+    Vector result = x.unaryExpr([](DataType x) { return CalcDim1(x); });
     assert(result.allFinite() && "Not finite data");
     return result;
 }
-Matrix ReLU::Derivative(const Vector& vector) {
-    assert(vector.allFinite() && "Not finite data");
-    Vector result = vector.unaryExpr([](DataType x) { return ReLU::DerivativeDim1(x); });
+Matrix ReLU::Derivative(const Vector& x) {
+    assert(x.allFinite() && "Not finite data");
+    Vector result = x.unaryExpr([](DataType x) { return ReLU::DerivativeDim1(x); });
     assert(result.allFinite() && "Not finite data");
     return result.asDiagonal();
 }
@@ -119,25 +119,25 @@ DataType Linear::CalcDim1(DataType x) {
 DataType Linear::DerivativeDim1(DataType) {
     return 1.0;
 }
-Vector Linear::Calc(const Vector& vector) {
-    return vector.unaryExpr([](DataType x) { return CalcDim1(x); });
+Vector Linear::Calc(const Vector& x) {
+    return x.unaryExpr([](DataType x) { return CalcDim1(x); });
 }
-Matrix Linear::Derivative(const Vector& vector) {
-    Vector result = vector.unaryExpr([](DataType x) { return Linear::DerivativeDim1(x); });
+Matrix Linear::Derivative(const Vector& x) {
+    Vector result = x.unaryExpr([](DataType x) { return Linear::DerivativeDim1(x); });
     return result.asDiagonal();
 }
 
-Vector Softmax::Calc(const Vector& vector) {
-    assert(vector.allFinite() && "Not finite data");
-    Vector exp_x = (vector.array() - vector.maxCoeff()).exp();
+Vector Softmax::Calc(const Vector& x) {
+    assert(x.allFinite() && "Not finite data");
+    Vector exp_x = (x.array() - x.maxCoeff()).exp();
     assert(exp_x.allFinite() && "Not finite data");
     DataType sum_exp_x = exp_x.sum();
     assert(sum_exp_x != 0 && "Zero division");
     return exp_x / sum_exp_x;
 }
-Matrix Softmax::Derivative(const Vector& vector) {
-    assert(vector.allFinite() && "Not finite data");
-    Vector softmax_x = Calc(vector);
+Matrix Softmax::Derivative(const Vector& x) {
+    assert(x.allFinite() && "Not finite data");
+    Vector softmax_x = Calc(x);
     assert(softmax_x.allFinite() && "Not finite data");
 
     Matrix jacobian = softmax_x.asDiagonal();

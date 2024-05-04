@@ -17,13 +17,26 @@ struct DataSet {
 
 class MnistTesting {
 public:
-    static int Run(/*int argc, char* argv[]*/);
+    static void Run();
 
-    static DataSet GetMnistData(Index train_size = 0);
+    static DataSet GetMnistData(Index train_size = kMnistTrainDataSize);
 
-    static int Train(Net& net, DataSet& dataset, Counter iter_count, DataType ilr, DataType decay,
-                     Path path);
+    static int Train(Net& net, DataSet& dataset, Index iter_count = kDefaultMaxIter,
+                     DataType initial_learning_rate = kDefaultInitLR,
+                     DataType decay = kDefaultDecay, LFName name = kDefaultLFName,
+                     const Path& path = "");
 
-    static DataType CalcAccuracy(Net& net, DataSet& dataset);
+    static DataType CalcAccuracy(const Net& net, const DataSet& dataset);
+
+    static constexpr const Index kMnistTrainDataSize = 60000;
+
+private:
+    static constexpr const LFName kDefaultLFName = LFName::MSE;
+    static constexpr const DataType kDefaultError = 0.1;
+    static constexpr const Index kDefaultMaxIter = 10;
+    static constexpr const DataType kDefaultInitLR = 0.01;
+    static constexpr const DataType kDefaultDecay = 0;
+    static constexpr const Index kDefaultBatchSize = 64;
+    static constexpr const PI kDefaultPI = PI::PrintInfo;
 };
 }  // namespace project

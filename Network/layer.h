@@ -8,17 +8,20 @@ public:
     Layer() = default;
     Layer(Index input_size, Index output_size, ActivationFunction func);
     // x -> (ax + b) -> sigma(ax + b)
-    Vector Calc(const Vector& input) const;
-    Matrix Calc(const Matrix& input) const;
+    Vector Calc(const Vector& xs) const;
+    Matrix Calc(const Matrix& xs) const;
 
-    RowVector PushU(const RowVector& u, const Vector& input) const;
-    Matrix PushU(const Matrix& u, const Matrix& input) const;
+    Vector Linear(const Vector& x) const;
+    Matrix Linear(const Matrix& xs) const;
 
-    Matrix GetACorrection(const RowVector& u, const Vector& input) const;
-    Matrix GetACorrection(const Matrix& u, const Matrix& input) const;
+    RowVector PushU(const RowVector& u, const Vector& x) const;
+    Matrix PushU(const Matrix& us, const Matrix& xs) const;
 
-    Vector GetBCorrection(const RowVector& u, const Vector& input) const;
-    Vector GetBCorrection(const Matrix& u, const Matrix& input) const;
+    Matrix GetACorrection(const RowVector& u, const Vector& x) const;
+    Matrix GetACorrection(const Matrix& us, const Matrix& xs) const;
+
+    Vector GetBCorrection(const RowVector& u, const Vector& x) const;
+    Vector GetBCorrection(const Matrix& us, const Matrix& xs) const;
 
     void SetParam(Matrix&& matrix_a, Vector&& vector_b);
 

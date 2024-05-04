@@ -20,18 +20,8 @@ using Matrix = Eigen::MatrixXd;
 using Index = Eigen::Index;
 using Vector = Eigen::VectorXd;
 using RowVector = Eigen::RowVectorXd;
-using Sizes = const std::vector<Index>&;
+using Sizes = std::vector<Index>;
 
-using Counter = int;
-
-using FuncAct = std::function<Vector(Vector)>;
-using FuncDerivativeAct = std::function<Matrix(Vector)>;
-using FuncDerivativeDim1Act = std::function<DataType(DataType)>;
-
-using FuncDist = std::function<DataType(const Vector&, const Vector&)>;
-using FuncGrad = std::function<RowVector(const Vector&, const Vector&)>;
-
-using Path = const std::string&;
 
 struct Data {
     Matrix input_vectors;

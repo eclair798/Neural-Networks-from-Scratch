@@ -4,18 +4,20 @@
 
 namespace project {
 
-enum class LFName { SquaredEuclidean, Manhattan, CrossEntropy };
+enum class LFName { MSE, Manhattan, CrossEntropy };
 
 class LossFunction {
 public:
-    LossFunction() = default;
+    using FuncDist = std::function<DataType(const Vector&, const Vector&)>;
+    using FuncGrad = std::function<RowVector(const Vector&, const Vector&)>;
+
     LossFunction(FuncDist calc, FuncGrad der_calc);
     static LossFunction Make(LFName name);
 
     DataType Dist(const Vector& x, const Vector& y) const;
     Vector Grad(const Vector& x, const Vector& y) const;
-    DataType Dist(const Matrix& x, const Matrix& y) const;
-    Matrix Grad(const Matrix& x, const Matrix& y) const;
+    DataType Dist(const Matrix& xs, const Matrix& y) const;
+    Matrix Grad(const Matrix& xs, const Matrix& y) const;
 
 private:
     FuncDist dist_;
@@ -23,7 +25,7 @@ private:
 };
 
 namespace loss_func_options {
-class SquaredEuclidean {
+class MSE {
 public:
     static DataType Dist(const Vector& x, const Vector& y);
     static Vector Grad(const Vector& x, const Vector& y);

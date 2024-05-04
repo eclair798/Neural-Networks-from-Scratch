@@ -6,6 +6,8 @@
 
 namespace project {
 
+enum class PI { PrintInfo, DoNotPrintInfo };
+
 class Net {
 
     using Layers = std::vector<Layer>;
@@ -16,22 +18,28 @@ class Net {
 public:
     struct Info {
         DataType error_rate;
-        Counter iterations_count;
+        Index iterations_count;
     };
 
-    Net(Sizes layer_sizes, const AFNames& act_funcs, Path input_path = "");
-    Info Train(const Data& train_data, const LFName& dist_func, DataType eps = 0.01,
-               Counter max_iter = 250, DataType initial_learning_rate = 0.1, DataType decay = 0,
-               Index batch_size = 64, bool print_info = true, Path output_path = "");
+    Net(const Sizes& layer_sizes, const AFNames& act_funcs, const Path& input_path = "");
+    Info Train(const Data& train_data, const LFName& dist_func, DataType error = kDefaultError,
+               Index max_iter = kDefaultMaxIter, DataType initial_learning_rate = kDefaultInitLR, DataType decay = kDefaultDecay,
+               Index batch_size = kDefaultBatchSize, PI print_info = kDefaultPI);
+    void SaveParams(const Path& output_path = "");
     Vector Calc(const Vector& x) const;
-    Matrix Calc(const Matrix& x) const;
+    Matrix Calc(const Matrix& xs) const;
 
 private:
-    Deltas GetCorrections(const Data& data) const;
+    static constexpr const LFName kDefaultLFName = LFName::MSE;
+    static constexpr const DataType kDefaultError = 0.01;
+    static constexpr const Index kDefaultMaxIter = 10;
+    static constexpr const DataType kDefaultInitLR = 0.1;
+    static constexpr const DataType kDefaultDecay = 0;
+    static constexpr const Index kDefaultBatchSize = 64;
+    static constexpr const PI kDefaultPI = PI::PrintInfo;
+    Deltas GetCorrections(const Data& data, LossFunction dist_func) const;
     Layers layers_;
-    LossFunction dist_func_;
-    std::unique_ptr<ParameterReader> reader_ = nullptr;
-    std::unique_ptr<ParameterWriter> writer_ = nullptr;
+    //    LossFunction dist_func_;
 };
 
 }  // namespace project
