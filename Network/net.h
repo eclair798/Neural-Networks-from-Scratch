@@ -9,7 +9,6 @@ namespace project {
 enum class PI { PrintInfo, DoNotPrintInfo };
 
 class Net {
-
     using Layers = std::vector<Layer>;
     using AFNames = std::vector<AFName>;
     using Calculations = std::vector<Matrix>;
@@ -22,11 +21,11 @@ public:
     };
 
     Net(const Sizes& layer_sizes, const AFNames& act_funcs, const Path& input_path = "");
-    Info Train(const Data& train_data, const LFName& dist_func, DataType error = kDefaultError,
-               Index max_iter = kDefaultMaxIter, DataType initial_learning_rate = kDefaultInitLR, DataType decay = kDefaultDecay,
+    Info Train(const Data& train_data, const LFName& dist_func = kDefaultLFName,
+               DataType error = kDefaultError, Index max_iter = kDefaultMaxIter,
+               DataType initial_learning_rate = kDefaultInitLR, DataType decay = kDefaultDecay,
                Index batch_size = kDefaultBatchSize, PI print_info = kDefaultPI);
     void SaveParams(const Path& output_path = "");
-    Vector Calc(const Vector& x) const;
     Matrix Calc(const Matrix& xs) const;
 
 private:

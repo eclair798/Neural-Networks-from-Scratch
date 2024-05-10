@@ -8,7 +8,6 @@ void React() {
         throw;
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
-    } catch (...) {
-    }
+    } catch (...) {}
 }
-}
+}  // namespace except

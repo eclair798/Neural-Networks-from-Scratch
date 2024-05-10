@@ -4,9 +4,8 @@
 int main() {
     try {
         project::MnistTesting::Run();
-    } catch(...) {
+    } catch (...) {
         except::React();
     }
     return 0;
 }
-

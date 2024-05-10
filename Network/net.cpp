@@ -7,6 +7,7 @@ namespace project {
 namespace {
 
 using RandGen = std::mt19937;
+
 RandGen& GetRng() {
     static RandGen rng(1);
     return rng;
@@ -59,13 +60,12 @@ Net::Net(const Sizes& layer_sizes, const AFNames& act_funcs, const Path& input_p
     if (!input_path.empty()) {
         reader = std::make_unique<ParameterReader>(input_path);
     }
-    assert(reader_ == nullptr ||
+    assert(reader == nullptr ||
            (layer_sizes.size() - 1 == reader->GetParamsCount()) &&
                "The number of layers does not correspond to the number of parameters in file");
 
     for (Index i = 0; i < layer_sizes.size() - 1; ++i) {
-        layers_.emplace_back(layer_sizes[i], layer_sizes[i + 1],
-                             ActivationFunction::Make(act_funcs[i]));
+        layers_.emplace_back(layer_sizes[i], layer_sizes[i + 1], AFMake(act_funcs[i]));
         if (reader != nullptr) {
             Parameter param = reader->ReadParam();
             assert(param.matrix_a.cols() == layer_sizes[i] &&
@@ -80,6 +80,7 @@ Net::Net(const Sizes& layer_sizes, const AFNames& act_funcs, const Path& input_p
         }
     }
 }
+
 Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType error, Index max_iter,
                      DataType initial_learning_rate, DataType decay, Index batch_size,
                      PI print_info) {
@@ -128,7 +129,6 @@ Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType erro
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);
 
         if (print_info == PI::PrintInfo) {
-
             Matrix my_train_output = Calc(train_data.input_vectors);
 
             assert(my_train_output.allFinite() && "Not finite data");
@@ -152,7 +152,7 @@ Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType erro
 }
 
 Matrix Net::Calc(const Matrix& xs) const {
-    assert(x.rows() == layers_.front().GetInputSize() &&
+    assert(xs.rows() == layers_.front().GetInputSize() &&
            "Incorrect dimension of the input vectors");
     Matrix cur_x = xs;
     for (const Layer& layer : layers_) {

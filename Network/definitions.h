@@ -1,9 +1,12 @@
 #pragma once
 
+#undef NDEBUG
+
 #include "../eigen/Eigen/Eigen"
 #include "../EigenRand/EigenRand/EigenRand"
 
 #include <algorithm>
+#include <variant>
 #include <cassert>
 #include <chrono>
 #include <initializer_list>
@@ -21,7 +24,6 @@ using Index = Eigen::Index;
 using Vector = Eigen::VectorXd;
 using RowVector = Eigen::RowVectorXd;
 using Sizes = std::vector<Index>;
-
 
 struct Data {
     Matrix input_vectors;

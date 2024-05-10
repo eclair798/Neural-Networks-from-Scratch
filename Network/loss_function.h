@@ -16,8 +16,8 @@ public:
 
     DataType Dist(const Vector& x, const Vector& y) const;
     Vector Grad(const Vector& x, const Vector& y) const;
-    DataType Dist(const Matrix& xs, const Matrix& y) const;
-    Matrix Grad(const Matrix& xs, const Matrix& y) const;
+    DataType Dist(const Matrix& xs, const Matrix& ys) const;
+    Matrix Grad(const Matrix& xs, const Matrix& ys) const;
 
 private:
     FuncDist dist_;
@@ -30,6 +30,7 @@ public:
     static DataType Dist(const Vector& x, const Vector& y);
     static Vector Grad(const Vector& x, const Vector& y);
 };
+
 class Manhattan {
 public:
     static DataType Dist(const Vector& x, const Vector& y);

@@ -8,63 +8,60 @@ enum class AFName { Sigmoid, Tanh, ReLU, Linear, Softmax };
 
 class ActivationFunction {
 public:
-    using Func = std::function<Vector(Vector)>;
-    using FuncDerivative = std::function<Matrix(Vector)>;
-    using FuncDerivativeDim1 = std::function<DataType(DataType)>;
+    using Func = std::function<DataType(DataType)>;
 
     ActivationFunction() = default;
-    ActivationFunction(
-        Func calc, FuncDerivative der_calc, bool diag_der = true,
-        FuncDerivativeDim1 der_dim1_calc = [](DataType x) { return 0; });
-    static ActivationFunction Make(AFName name);
+    ActivationFunction(Func calc, Func der_calc);
+
+    DataType Calc(DataType xi) const;
+    DataType Derivative(DataType xi) const;
     Vector Calc(const Vector& x) const;
     Matrix Derivative(const Vector& x) const;
-    Matrix CalcBatch(const Matrix& xs) const;
-    Matrix DerivativeBatch(const Matrix& xs) const;
-    bool IsDiagonalDerivative() const;
+    Matrix Calc(const Matrix& xs) const;
+    Matrix Derivative(const Matrix& xs) const;
 
 private:
     Func calc_;
-    FuncDerivative derivative_;
-    FuncDerivativeDim1 derivative_dim1_;
-    bool is_diagonal_derivative_;
+    Func derivative_;
 };
 
 namespace act_func_options {
 class Sigmoid {
 public:
-    static DataType CalcDim1(DataType x);
-    static DataType DerivativeDim1(DataType x);
-    static Vector Calc(const Vector& x);
-    static Matrix Derivative(const Vector& x);
+    static DataType Calc(DataType xi);
+    static DataType Derivative(DataType xi);
 };
+
 class Tanh {
 public:
-    static DataType CalcDim1(DataType x);
-    static DataType DerivativeDim1(DataType x);
-    static Vector Calc(const Vector& x);
-    static Matrix Derivative(const Vector& x);
+    static DataType Calc(DataType xi);
+    static DataType Derivative(DataType xi);
 };
+
 class ReLU {
 public:
-    static DataType CalcDim1(DataType x);
-    static DataType DerivativeDim1(DataType x);
-    static Vector Calc(const Vector& x);
-    static Matrix Derivative(const Vector& x);
+    static DataType Calc(DataType xi);
+    static DataType Derivative(DataType xi);
 };
+
 class Linear {
 public:
-    static DataType CalcDim1(DataType x);
-    static DataType DerivativeDim1(DataType x);
-    static Vector Calc(const Vector& x);
-    static Matrix Derivative(const Vector& x);
+    static DataType Calc(DataType xi);
+    static DataType Derivative(DataType xi);
 };
 
 class Softmax {
 public:
+    Softmax() = default;
     static Vector Calc(const Vector& x);
     static Matrix Derivative(const Vector& x);
+    static Matrix Calc(const Matrix& xs);
 };
 
 }  // namespace act_func_options
+
+using Sigma = std::variant<ActivationFunction, act_func_options::Softmax>;
+
+Sigma AFMake(AFName name);
+
 }  // namespace project

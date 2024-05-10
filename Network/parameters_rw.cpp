@@ -4,15 +4,17 @@
 
 namespace project {
 
-ParameterReader::ParameterReader(const Path& input_path) : input_file_(input_path, std::ios::binary) {
+ParameterReader::ParameterReader(const Path& input_path)
+    : input_file_(input_path, std::ios::binary) {
     assert(input_file_ && "Problem with input file");
     input_file_.read(reinterpret_cast<char*>(&params_count_), sizeof(params_count_));
 }
+
 Index ParameterReader::GetParamsCount() {
     return params_count_;
 }
+
 Parameter ParameterReader::ReadParam() {
-    assert(processed_params_count_ != params_count_ && "Trying to read empty file");
     Parameter param;
 
     Index rows, cols;
@@ -38,11 +40,12 @@ ParameterWriter::ParameterWriter(const Path& output_path, Index count)
     params_count_ = count;
     output_file_.write(reinterpret_cast<const char*>(&params_count_), sizeof(params_count_));
 }
+
 Index ParameterWriter::GetParamsCount() {
     return params_count_;
 }
+
 void ParameterWriter::WriteParam(const Matrix& matrix_a, const Vector& vector_b) {
-    assert(processed_params_count_ != params_count_ && "Trying to write into full file");
     Index rows = matrix_a.rows();
     Index cols = matrix_a.cols();
     output_file_.write(reinterpret_cast<char*>(&rows), sizeof(rows));
