@@ -103,27 +103,18 @@ Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType erro
     Index iterations_count = 0;
     for (Index epoch = 1; epoch <= max_iter; ++epoch) {
         Deltas cur_deltas;
+
+        DataType learning_rate;
+        iterations_count = epoch;
+        learning_rate = initial_learning_rate / (1 + epoch * decay);
+
         for (const Data& batch : batches) {
             cur_deltas = GetCorrections(batch, dist_func);
             for (Index j = 0; j < layers_.size(); ++j) {
-                if (epoch == 1) {
-                    average_deltas[j].matrix_a = (cur_deltas[j].matrix_a / batches.size());
-                    average_deltas[j].vector_b = (cur_deltas[j].vector_b / batches.size());
-                } else {
-                    average_deltas[j].matrix_a += (cur_deltas[j].matrix_a / batches.size());
-                    average_deltas[j].vector_b += (cur_deltas[j].vector_b / batches.size());
-                }
+                layers_[j].CorrectA(cur_deltas[j].matrix_a, learning_rate);
+                layers_[j].CorrectB(cur_deltas[j].vector_b, learning_rate);
             }
         }
-
-        DataType learning_rate;
-        learning_rate = initial_learning_rate / (1 + epoch * decay);
-
-        for (Index j = 0; j < layers_.size(); ++j) {
-            layers_[j].CorrectA(average_deltas[j].matrix_a, learning_rate);
-            layers_[j].CorrectB(average_deltas[j].vector_b, learning_rate);
-        }
-        iterations_count = epoch;
 
         auto now = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);

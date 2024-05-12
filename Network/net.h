@@ -8,9 +8,10 @@ namespace project {
 
 enum class PI { PrintInfo, DoNotPrintInfo };
 
+using AFNames = std::vector<AFName>;
+
 class Net {
     using Layers = std::vector<Layer>;
-    using AFNames = std::vector<AFName>;
     using Calculations = std::vector<Matrix>;
     using Deltas = std::vector<Parameter>;
 
@@ -38,7 +39,6 @@ private:
     static constexpr const PI kDefaultPI = PI::PrintInfo;
     Deltas GetCorrections(const Data& data, LossFunction dist_func) const;
     Layers layers_;
-    //    LossFunction dist_func_;
 };
 
 }  // namespace project

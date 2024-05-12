@@ -7,8 +7,6 @@ class Layer {
 public:
     Layer() = default;
     Layer(Index input_size, Index output_size, Sigma func);
-    // x -> (ax + b) -> sigma(ax + b)
-    //    Vector Calc(const Vector& xs) const;
     Matrix Calc(const Matrix& xs) const;
 
     Vector Linear(const Vector& x) const;
@@ -43,4 +41,5 @@ private:
     Vector vector_b_;  // outputS * 1
     std::variant<ActivationFunction, act_func_options::Softmax> sigma_;
 };
+
 }  // namespace project

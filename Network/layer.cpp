@@ -65,7 +65,6 @@ Vector Layer::Linear(const Vector& x) const {
     assert(x.allFinite() && "Not finite data");
     Vector lin_output = matrix_a_ * x + vector_b_;
     assert(lin_output.allFinite() && "Not finite data");
-    //    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
     return lin_output;
 }
 
@@ -73,7 +72,6 @@ Matrix Layer::Linear(const Matrix& xs) const {
     assert(xs.allFinite() && "Not finite data");
     Matrix lin_output = (matrix_a_ * xs).colwise() + vector_b_;
     assert(lin_output.allFinite() && "Not finite data");
-    //    lin_output = lin_output.unaryExpr([](double x) { return std::isfinite(x) ? x : 0.0; });
     return lin_output;
 }
 
