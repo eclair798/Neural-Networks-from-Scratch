@@ -23,7 +23,7 @@ public:
 
     static int Train(Net& net, DataSet& dataset, Index iter_count = kDefaultMaxIter,
                      DataType initial_learning_rate = kDefaultInitLR,
-                     DataType decay = kDefaultDecay, LFName name = kDefaultLFName,
+                     DataType decay = kDefaultDecay, LFName lf_name = kDefaultLFName,
                      const Path& path = "");
 
     static DataType CalcAccuracy(const Net& net, const DataSet& dataset);
@@ -32,11 +32,11 @@ public:
 
 private:
     static constexpr const LFName kDefaultLFName = LFName::MSE;
-    static constexpr const DataType kDefaultError = 0.1;
-    static constexpr const Index kDefaultMaxIter = 10;
-    static constexpr const DataType kDefaultInitLR = 0.01;
-    static constexpr const DataType kDefaultDecay = 0;
-    static constexpr const Index kDefaultBatchSize = 64;
+    static constexpr const DataType kDefaultError = 0.01;
+    static constexpr const Index kDefaultMaxIter = 25;
+    static constexpr const DataType kDefaultInitLR = 0.1;
+    static constexpr const DataType kDefaultDecay = 1;
+    static constexpr const Index kDefaultBatchSize = 128;
     static constexpr const PI kDefaultPI = PI::PrintInfo;
 };
 }  // namespace project

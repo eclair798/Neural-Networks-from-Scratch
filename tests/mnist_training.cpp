@@ -14,12 +14,6 @@ DataType NormPixel(size_t pixel) {
     return static_cast<double>(pixel) / kNorm;
 }
 
-//DataType NormPixel(size_t pixel) {
-//    static constexpr const DataType kThrashHold = 75.0;
-//    DataType result = pixel > kThrashHold ? 1.0 : 0.0;
-//    return result;
-//}
-
 void PutInputVec(const ImagesContainer& images, Matrix& input, Index num_input_pixels, Index i) {
     for (Index j = 0; j < num_input_pixels; ++j) {
         input(j, i) = NormPixel(images[i][j]);
@@ -65,9 +59,9 @@ DataSet MnistTesting::GetMnistData(Index train_size) {
 }
 
 int MnistTesting::Train(Net& net, DataSet& dataset, Index iter_count,
-                        DataType initial_learning_rate, DataType decay, LFName name,
+                        DataType initial_learning_rate, DataType decay, LFName lf_name,
                         const Path& path) {
-    Net::Info info = net.Train(dataset.train, name, kDefaultError, iter_count,
+    Net::Info info = net.Train(dataset.train, lf_name, kDefaultError, iter_count,
                                initial_learning_rate, decay, kDefaultBatchSize, kDefaultPI);
     net.SaveParams(path);
     std::cout << "RESULT:\n"
@@ -93,24 +87,21 @@ DataType MnistTesting::CalcAccuracy(const Net& net, const DataSet& dataset) {
 }
 
 void MnistTesting::Run() {
-    Path path = "../../tests/mnist_ReLU_Softmax_32n_95per.bin";
-    Path path1 = "../../tests/params.bin";
-    Path path2 = "../../tests/params2.bin";
-    Path path3 = "../../tests/params3.bin";
-    Path path4 = "../../tests/params4.bin";  // 784 -- AFName::ReLU -- 32 -- AFName::Softmax -- 10
+    Path path = "../../tests/params.bin";  // 784 -- AFName::ReLU -- 32 -- AFName::Softmax -- 10
 
     constexpr Index kDataSize = 60000;
     DataSet dataset(GetMnistData(kDataSize));
 
     const Sizes k_layer_sizes = {dataset.num_input_pixels, 32, dataset.num_output_pixels};
-    Path input_path = path1;
-    Net net(k_layer_sizes, {AFName::ReLU, AFName::Softmax}, input_path);
+    const AFNames k_af_names = {AFName::ReLU, AFName::Softmax};
+    Path input_path;
+    Net net(k_layer_sizes, k_af_names, input_path);
 
     constexpr LFName kLFName = LFName::CrossEntropy;
-    constexpr Index kIterCount = 0;
-    constexpr DataType kIlr = 0.01;
-    constexpr DataType kDecay = 0.01;
-    Path output_path = "";
+    constexpr Index kIterCount = 17;
+    constexpr DataType kIlr = 0.20;
+    constexpr DataType kDecay = 0.15;
+    Path output_path = path;
     MnistTesting::Train(net, dataset, kIterCount, kIlr, kDecay, kLFName, output_path);
     DataType accuracy = CalcAccuracy(net, dataset);
     std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
