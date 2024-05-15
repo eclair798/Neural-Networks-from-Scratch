@@ -2,7 +2,7 @@
 
 #include "parameters_rw.h"
 
-namespace project {
+namespace nn {
 
 ParameterReader::ParameterReader(const Path& input_path)
     : input_file_(input_path, std::ios::binary) {
@@ -58,6 +58,6 @@ void ParameterWriter::WriteParam(const Matrix& matrix_a, const Vector& vector_b)
     output_file_.write(reinterpret_cast<const char*>(vector_b.data()), size * sizeof(DataType));
 }
 
-}  // namespace project
+}  // namespace nn
 
 // namespace project

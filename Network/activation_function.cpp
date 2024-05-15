@@ -2,7 +2,7 @@
 
 #include "activation_function.h"
 
-namespace project {
+namespace nn {
 
 ActivationFunction::ActivationFunction(Func calc, Func der_calc)
     : calc_(std::move(calc)), derivative_(std::move(der_calc)) {
@@ -159,4 +159,4 @@ Sigma AFMake(AFName name) {
     }
 }
 
-}  // namespace project
+}  // namespace nn

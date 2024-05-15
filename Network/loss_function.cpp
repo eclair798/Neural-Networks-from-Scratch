@@ -2,7 +2,7 @@
 
 #include "loss_function.h"
 
-namespace project {
+namespace nn {
 
 LossFunction::LossFunction(FuncDist calc, FuncGrad der_calc)
     : dist_(std::move(calc)), grad_(std::move(der_calc)) {
@@ -117,4 +117,4 @@ Vector CrossEntropy::Grad(const Vector& x, const Vector& y) {
 }
 
 }  // namespace loss_func_options
-}  // namespace project
+}  // namespace nn

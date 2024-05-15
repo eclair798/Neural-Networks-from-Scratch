@@ -3,7 +3,7 @@
 
 int main() {
     try {
-        project::MnistTesting::Run();
+        nn::MnistTesting::Run();
     } catch (...) {
         except::React();
     }

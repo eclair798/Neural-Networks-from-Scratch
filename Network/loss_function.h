@@ -2,7 +2,7 @@
 
 #include "definitions.h"
 
-namespace project {
+namespace nn {
 
 enum class LFName { MSE, Manhattan, CrossEntropy };
 
@@ -43,4 +43,4 @@ public:
     static Vector Grad(const Vector& x, const Vector& y);
 };
 }  // namespace loss_func_options
-}  // namespace project
+}  // namespace nn

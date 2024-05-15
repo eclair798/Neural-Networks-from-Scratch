@@ -4,7 +4,7 @@
 
 #include "../mnist/include/mnist/mnist_reader.hpp"
 
-namespace project {
+namespace nn {
 
 struct DataSet {
     Index num_input_pixels;
@@ -31,12 +31,14 @@ public:
     static constexpr const Index kMnistTrainDataSize = 60000;
 
 private:
+    using Info = Net::Info;
+
     static constexpr const LFName kDefaultLFName = LFName::MSE;
     static constexpr const DataType kDefaultError = 0.01;
     static constexpr const Index kDefaultMaxIter = 25;
     static constexpr const DataType kDefaultInitLR = 0.1;
     static constexpr const DataType kDefaultDecay = 1;
     static constexpr const Index kDefaultBatchSize = 128;
-    static constexpr const PI kDefaultPI = PI::PrintInfo;
+    static constexpr const PrintInfo kDefaultPI = PrintInfo::PrintInfo;
 };
-}  // namespace project
+}  // namespace nn

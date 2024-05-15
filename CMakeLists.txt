@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #Set(CMAKE_BUILD_TYPE Release)
 
+#add_compile_definitions(FORCE_ASSERT)
+
 add_subdirectory(eigen)
 add_subdirectory(EigenRand)
 add_subdirectory(Network)

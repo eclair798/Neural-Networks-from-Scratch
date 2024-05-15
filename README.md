@@ -7,13 +7,14 @@
 
 Проект имеет следующую структуру:
 
-- net: Класс, представляющий нейронную сеть. Он содержит слои (layer), функцию активации (activation_function), функцию
-  потерь (loss_function).
-- layer: Класс, представляющий слой нейронной сети.
+- net: Класс, представляющий нейронную сеть. Он содержит слои (layer), а также хранит функцию
+  потерь (loss_function) во время обучения.
+- layer: Класс, представляющий слой нейронной сети. Он содержит линейную функцию и функцию активации (
+  activation_function).
 - activation_function: Класс, реализующий различные функции активации, такие как Sigmoid, ReLU, Tanh, Linear и Softmax.
-- loss_function: Класс, реализующий функции потерь, используемую для обучения нейронной сети, такие как MSE, Manhattan и
+- loss_function: Класс, реализующий функции потерь, используемые для обучения нейронной сети, такие как MSE, Manhattan и
   CrossEntropy.
-- definitions: Файл, содержащий определения типов данных и констант, используемых в проекте.
+- definitions: Файл, содержащий определения типов данных, используемых в проекте.
 
 ## Использование
 
@@ -29,7 +30,7 @@ const AFNames k_af_names = {AFName::ReLU, AFName::Softmax};
 Net net(k_layer_sizes, k_af_names, input_path);
 
 const LFName kDefaultLFName = LFName::MSE;
-const PI kDefaultPI = PI::PrintInfo;
+const PrintInfo kDefaultPI = PrintInfo::PrintInfo;
 MnistTesting::Train(net, dataset, kIterCount, kIlr, kDecay, kLFName, output_path);
 
 Net::Info info = net.Train(dataset.train, kLFName, kDefaultError, kDefaultMaxIter,
@@ -49,8 +50,7 @@ std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
 
 1. Загружается набор данных MNIST размером 60000 изображений.
 2. Создается нейронная сеть net с заданными размерами слоев и функциями активации (ReLU и Softmax).
-3. Определяются параметры обучения, такие как функция потерь (CrossEntropy), количество итераций, скорость обучения и
-   коэффициент затухания.
+3. Определяются параметры обучения, такие как функция потерь (CrossEntropy), количество итераций и скорость обучения.
 4. Выполняется обучение нейронной сети с помощью метода Train.
 5. Вычисляется точность обученной нейронной сети на тестовом наборе данных.
 

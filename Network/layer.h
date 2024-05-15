@@ -2,7 +2,7 @@
 
 #include "activation_function.h"
 
-namespace project {
+namespace nn {
 class Layer {
 public:
     Layer() = default;
@@ -42,4 +42,4 @@ private:
     std::variant<ActivationFunction, act_func_options::Softmax> sigma_;
 };
 
-}  // namespace project
+}  // namespace nn

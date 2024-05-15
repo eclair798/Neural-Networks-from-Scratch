@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef FORCE_ASSERT
 #undef NDEBUG
+#endif
 
 #include "../eigen/Eigen/Eigen"
 #include "../EigenRand/EigenRand/EigenRand"
@@ -9,6 +11,7 @@
 #include <variant>
 #include <cassert>
 #include <chrono>
+#include <filesystem>
 #include <initializer_list>
 #include <iostream>
 #include <memory>
@@ -16,7 +19,7 @@
 #include <string>
 #include <vector>
 
-namespace project {
+namespace nn {
 
 using DataType = Eigen::MatrixXd::Scalar;
 using Matrix = Eigen::MatrixXd;
@@ -24,6 +27,8 @@ using Index = Eigen::Index;
 using Vector = Eigen::VectorXd;
 using RowVector = Eigen::RowVectorXd;
 using Sizes = std::vector<Index>;
+
+using Path = std::filesystem::path;
 
 struct Data {
     Matrix input_vectors;
@@ -37,4 +42,4 @@ struct Parameter {
 
 using Batches = std::vector<Data>;
 
-}  // namespace project
+}  // namespace nn

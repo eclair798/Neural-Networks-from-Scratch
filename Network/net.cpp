@@ -2,7 +2,7 @@
 
 #include "net.h"
 
-namespace project {
+namespace nn {
 
 namespace {
 
@@ -83,7 +83,7 @@ Net::Net(const Sizes& layer_sizes, const AFNames& act_funcs, const Path& input_p
 
 Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType error, Index max_iter,
                      DataType initial_learning_rate, DataType decay, Index batch_size,
-                     PI print_info) {
+                     PrintInfo print_info) {
     assert(train_data.input_vectors.rows() == layers_.front().GetInputSize() &&
            train_data.output_vectors.rows() == layers_.back().GetOutputSize() &&
            "Mismatch with the size of the specified layers");
@@ -119,7 +119,7 @@ Net::Info Net::Train(const Data& train_data, const LFName& dist_f, DataType erro
         auto now = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start);
 
-        if (print_info == PI::PrintInfo) {
+        if (print_info == PrintInfo::PrintInfo) {
             Matrix my_train_output = Calc(train_data.input_vectors);
 
             assert(my_train_output.allFinite() && "Not finite data");
@@ -197,4 +197,4 @@ void Net::SaveParams(const Path& output_path) {
     }
 }
 
-}  // namespace project
+}  // namespace nn

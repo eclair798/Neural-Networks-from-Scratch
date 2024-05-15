@@ -2,7 +2,7 @@
 
 #include "definitions.h"
 
-namespace project {
+namespace nn {
 
 enum class AFName { Sigmoid, Tanh, ReLU, Linear, Softmax };
 
@@ -64,4 +64,4 @@ using Sigma = std::variant<ActivationFunction, act_func_options::Softmax>;
 
 Sigma AFMake(AFName name);
 
-}  // namespace project
+}  // namespace nn

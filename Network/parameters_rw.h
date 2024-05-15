@@ -4,9 +4,7 @@
 
 #include <fstream>
 
-namespace project {
-
-using Path = std::string;
+namespace nn {
 
 class ParameterReader {
 public:
@@ -30,4 +28,4 @@ private:
     Index params_count_;
 };
 
-}  // namespace project
+}  // namespace nn

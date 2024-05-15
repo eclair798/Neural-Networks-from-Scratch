@@ -2,7 +2,7 @@
 
 #include "mnist_training.h"
 
-namespace project {
+namespace nn {
 
 using ImagesContainer = std::vector<std::vector<uint8_t>>;
 using LabelsContainer = std::vector<uint8_t>;
@@ -14,15 +14,15 @@ DataType NormPixel(size_t pixel) {
     return static_cast<double>(pixel) / kNorm;
 }
 
-void PutInputVec(const ImagesContainer& images, Matrix& input, Index num_input_pixels, Index i) {
+void PutInputVec(const ImagesContainer& images, Index num_input_pixels, Index i, Matrix* input) {
     for (Index j = 0; j < num_input_pixels; ++j) {
-        input(j, i) = NormPixel(images[i][j]);
+        (*input)(j, i) = NormPixel(images[i][j]);
     }
 }
 
-void PutOutputVec(const LabelsContainer& labels, Matrix& output, Index i) {
+void PutOutputVec(const LabelsContainer& labels, Index i, Matrix* output) {
     static constexpr const DataType kFlag = 1.0;
-    output(static_cast<Index>(labels[i]), i) = kFlag;
+    (*output)(static_cast<Index>(labels[i]), i) = kFlag;
 }
 
 }  // namespace
@@ -46,23 +46,24 @@ DataSet MnistTesting::GetMnistData(Index train_size) {
     const LabelsContainer& test_labels = mnist_dataset.test_labels;
 
     for (Index i = 0; i < num_train_images; ++i) {
-        PutInputVec(training_images, train.input_vectors, num_input_pixels, i);
-        PutOutputVec(training_labels, train.output_vectors, i);
+        PutInputVec(training_images, num_input_pixels, i, &train.input_vectors);
+        PutOutputVec(training_labels, i, &train.output_vectors);
     }
 
     for (Index i = 0; i < num_test_images; ++i) {
-        PutInputVec(test_images, test.input_vectors, num_input_pixels, i);
-        PutOutputVec(test_labels, test.output_vectors, i);
+        PutInputVec(test_images, num_input_pixels, i, &test.input_vectors);
+        PutOutputVec(test_labels, i, &test.output_vectors);
     }
 
-    return {num_input_pixels, num_output_pixels, num_train_images, num_test_images, train, test};
+    return {num_input_pixels, num_output_pixels, num_train_images,
+            num_test_images,  std::move(train),  std::move(test)};
 }
 
 int MnistTesting::Train(Net& net, DataSet& dataset, Index iter_count,
                         DataType initial_learning_rate, DataType decay, LFName lf_name,
                         const Path& path) {
-    Net::Info info = net.Train(dataset.train, lf_name, kDefaultError, iter_count,
-                               initial_learning_rate, decay, kDefaultBatchSize, kDefaultPI);
+    Info info = net.Train(dataset.train, lf_name, kDefaultError, iter_count, initial_learning_rate,
+                          decay, kDefaultBatchSize, kDefaultPI);
     net.SaveParams(path);
     std::cout << "RESULT:\n"
               << "iterations: " << info.iterations_count << "\terror rate: " << info.error_rate
@@ -89,12 +90,13 @@ DataType MnistTesting::CalcAccuracy(const Net& net, const DataSet& dataset) {
 void MnistTesting::Run() {
     Path path = "../../tests/params.bin";  // 784 -- AFName::ReLU -- 32 -- AFName::Softmax -- 10
 
+    using AFNames = Net::AFNames;
     constexpr Index kDataSize = 60000;
     DataSet dataset(GetMnistData(kDataSize));
 
     const Sizes k_layer_sizes = {dataset.num_input_pixels, 32, dataset.num_output_pixels};
     const AFNames k_af_names = {AFName::ReLU, AFName::Softmax};
-    Path input_path;
+    Path input_path = "";
     Net net(k_layer_sizes, k_af_names, input_path);
 
     constexpr LFName kLFName = LFName::CrossEntropy;
@@ -102,9 +104,9 @@ void MnistTesting::Run() {
     constexpr DataType kIlr = 0.20;
     constexpr DataType kDecay = 0.15;
     Path output_path = path;
-    MnistTesting::Train(net, dataset, kIterCount, kIlr, kDecay, kLFName, output_path);
+    Train(net, dataset, kIterCount, kIlr, kDecay, kLFName, output_path);
     DataType accuracy = CalcAccuracy(net, dataset);
     std::cout << "Accuracy of Neural Network: " << accuracy << "\n\n";
 }
 
-}  // namespace project
+}  // namespace nn

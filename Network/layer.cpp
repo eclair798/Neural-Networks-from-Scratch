@@ -2,7 +2,7 @@
 
 #include "layer.h"
 
-namespace project {
+namespace nn {
 
 namespace {
 
@@ -150,9 +150,7 @@ Matrix Layer::GetACorrection(const Matrix& us, const Matrix& xs) const {
     }
 
     for (Index i = 0; i < us.rows(); ++i) {
-        RowVector vec_u = us.row(i);
-        Vector vec_x = xs.col(i);
-        result += GetACorrection(vec_u, vec_x);
+        result += GetACorrection(Vector(us.row(i)), Vector(xs.col(i)));
     }
     result /= us.rows();
 
@@ -247,4 +245,4 @@ Index Layer::GetOutputSize() const {
     return output_size_;
 }
 
-}  // namespace project
+}  // namespace nn
